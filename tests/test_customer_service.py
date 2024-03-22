@@ -1,11 +1,9 @@
-from logging import warning
 import uuid
-from domain.entites.customer import Customer
-from domain.entites.company import Company
+from tests import ADMIN, ADMIN_PASSWORD
 from domain.entites.report import Report
+from domain.entites.customer import Customer
 from domain.services.admin_service import AdminService
 from domain.services.customer_service import CustomerService
-from tests import ADMIN, ADMIN_PASSWORD
 
 
 ADMIN.verify_password(ADMIN_PASSWORD)

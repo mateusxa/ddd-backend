@@ -14,9 +14,11 @@ class Repository:
                 return d
         return None
 
+
     @staticmethod
     def get_all():
         return data
+
 
     @staticmethod
     def save(dict: dict):
@@ -24,6 +26,7 @@ class Repository:
         dict["bucket_url"] = str(uuid.uuid4())
         data.append(dict)
         return dict
+
 
     @staticmethod
     def delete(id: str) -> None:

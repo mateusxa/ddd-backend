@@ -1,16 +1,15 @@
-import uuid
-from domain.entites.customer import Customer
-from domain.entites.company import Company
-from domain.entites.customer import Customer
-from domain.entites.report import Report
 from repository.reposity import Repository
+from domain.entites.report import Report
+from domain.entites.customer import Customer
 
 
 class CustomerService:
+
     customer: Customer
 
     def __init__(self, customer: Customer):
         self.customer = customer
+
 
     def get_reports(self):
         matching_dicts = []

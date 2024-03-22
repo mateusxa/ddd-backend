@@ -18,6 +18,7 @@ def test_hash_password():
     assert customer.email == email
     assert customer.hased_password != password
 
+
 def test_verify_password():
     company_id = "id"
     name = "name"

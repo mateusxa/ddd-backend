@@ -16,6 +16,7 @@ def test_hash_password():
     assert admin.email == email
     assert admin.hased_password != password
 
+
 def test_verify_password():
     name = "name"
     email = "email"

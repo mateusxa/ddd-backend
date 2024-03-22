@@ -1,11 +1,9 @@
-from logging import warning
 import uuid
-from domain.entites.admin import Admin
+from tests import ADMIN, ADMIN_PASSWORD
+from domain.entites.report import Report
 from domain.entites.company import Company
 from domain.entites.customer import Customer
-from domain.entites.report import Report
 from domain.services.admin_service import AdminService
-from tests import ADMIN, ADMIN_PASSWORD
 
 
 def test_create_and_get_company():
@@ -88,7 +86,6 @@ def test_delete_and_get_report():
         assert e
 
 
-
 def test_create_customer():
     name = "name"
     email = "email"
@@ -110,4 +107,3 @@ def test_create_customer():
     assert customer.name == name
     assert customer.email == email
     assert customer.hased_password != password
-
