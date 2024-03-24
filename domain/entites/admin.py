@@ -2,43 +2,70 @@ import hashlib
 from datetime import datetime
 from utils.constants import SALT
 
+class AdminId:
+
+    id: str
+
+    def __init__(self, id: str):
+        self.id = id
+
+    def __str__(self):
+        return self.id
+
 
 class Admin:
     
     name: str
     email: str
-    hased_password: str | None
-    id: str | None
+    hashed_password: str | None
+    id: AdminId | None
     created: datetime | None
 
 
-    def __init__(self, name: str, email: str, password: str | None = None, hased_password: str | None = None, id: str | None = None, created: datetime | None = None):
+    def __init__(
+            self, name: str, email: str, password: str | None = None, hashed_password: str | None = None, 
+            id: AdminId | None = None, created: datetime | None = None
+        ):
         self.name = name
         self.email = email
-        self.hased_password = self.__hash_password(password) if password else hased_password
+        self.hashed_password = self.__hash_password(password) if password else hashed_password
         self.id = id
         self.created = created or datetime.now()
 
 
+    def __repr__(self):
+        return f"Admin(\
+            name={self.name}, \
+            email={self.email}, \
+            hashed_password={self.hashed_password}, \
+            id={self.id}, \
+            created={self.created}\
+        )"
+
+
+    def to_dict(self):
+        return vars(self)
+
+
+    @staticmethod
+    def from_dict(source: dict):
+        if not all(attr in source for attr in Admin.__annotations__):
+            raise Exception(f"dict incomplete! {source}")
+        return Admin(
+            id = AdminId(source["id"]),
+            name = source["name"],
+            email = source["email"],
+            hashed_password = source["hashed_password"],
+            created = source["created"],
+        )
+    
+
     def verify_password(self, password: str):
-        if self.__hash_password(password) ==  self.hased_password:
+        if self.__hash_password(password) ==  self.hashed_password:
             self.verified = True
             return True
         return False
 
-
-    @staticmethod
-    def from_dict(dict: dict):
-        if not all(attr in dict for attr in Admin.__annotations__):
-            raise Exception(f"dict incomplete! {dict}")
-        return Admin(
-            id = dict["id"],
-            name = dict["name"],
-            email = dict["email"],
-            hased_password = dict["hased_password"],
-            created = dict["created"],
-        )
-    
 
     @staticmethod
     def __hash_password(password: str) -> str:

@@ -1,6 +1,8 @@
 import uuid
+
+import pytest
 from tests import ADMIN, ADMIN_PASSWORD
-from domain.entites.report import Report
+from domain.entites.report import Report, ReportId
 from domain.entites.company import Company
 from domain.entites.customer import Customer
 from domain.services.admin_service import AdminService
@@ -56,6 +58,14 @@ def test_create_and_get_report():
     assert got_report.company_id == company_id
 
 
+def test_get_report_fail():
+    ADMIN.verify_password(ADMIN_PASSWORD)
+    admin_service = AdminService(ADMIN)
+
+    with pytest.raises(Exception):
+        admin_service.get_report(ReportId("wrong_id"))
+
+
 def test_delete_and_get_report():
     name = "TestCompany"
     company_id = str(uuid.uuid4())
@@ -80,10 +90,8 @@ def test_delete_and_get_report():
 
     assert deleted_report is None
 
-    try:
+    with pytest.raises(Exception):
         admin_service.get_report(report.id)
-    except Exception as e:
-        assert e
 
 
 def test_create_customer():
@@ -106,4 +114,4 @@ def test_create_customer():
 
     assert customer.name == name
     assert customer.email == email
-    assert customer.hased_password != password
+    assert customer.hashed_password != password
