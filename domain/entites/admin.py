@@ -38,6 +38,12 @@ class Admin(Entity):
             id={self.id}, \
             created={self.created}\
         )"
+    
+
+    def set(self, password: str | None = None):
+        if password:
+            self.hashed_password = Admin.__hash_password(password)
+        return self
 
 
     @staticmethod

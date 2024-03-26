@@ -1,8 +1,9 @@
+from random import randint
 import uuid
 import pytest
 from domain.entites.report import Report, ReportId
 from domain.entites.company import Company
-from domain.entites.customer import Customer
+from domain.entites.report import Report
 from domain.services.admin_service import AdminService
 from domain.services.report_service import ReportService
 
@@ -56,3 +57,29 @@ def test_delete_and_get_report():
 
     with pytest.raises(Exception):
         report_service.get_by_id(report.id)
+
+
+def test_page_report():
+    company_id = str(uuid.uuid4())
+    report_service = ReportService()
+    name = f"testting{randint(1111, 9999)}"
+
+    for _ in range(6):
+        report_service.create(Report(
+            name=name,
+            company_id=company_id,
+        ), local_path="tests/file.pdf")
+
+    last_created = None
+    while True:
+        old_last_created = last_created
+        last_created, document_list = report_service.page(
+            last_created=last_created,
+            limit=2,
+        )
+        if not last_created:
+            break
+
+        if old_last_created:
+            assert old_last_created != last_created
+        # assert len(document_list) == 2

@@ -1,3 +1,4 @@
+from datetime import datetime
 from infrastructure.storage.storage import Storage
 from repository.reposity import Repository
 from domain.entites.report import Report, ReportId
@@ -10,6 +11,7 @@ class ReportService:
 
     def __init__(self):
         self.repository = Repository()
+
 
     def create(self, report: Report, local_path) -> Report:
         report_dict = self.repository.save(report)
@@ -30,6 +32,10 @@ class ReportService:
     
 
     def delete(self, report_id: ReportId) -> None:
+        Storage.delete_file_from_folder(
+            folder = report_id.get_class_name(),
+            filename = report_id.value,
+        )
         return self.repository.delete(report_id)
     
 
@@ -38,4 +44,8 @@ class ReportService:
         if report_dict:
             return Report.from_dict(report_dict)
         raise Exception(f"No reports with {report_id}")
+    
+
+    def page(self, last_created: datetime | None = None, limit: int | None = None, company_id: str | None = None):
+        return self.repository.page("reports", last_created=last_created, limit=limit, company_id=company_id)
     

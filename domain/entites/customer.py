@@ -56,6 +56,11 @@ class Customer(Entity):
         )
     
 
+    def set(self, password: str | None = None):
+        if password:
+            self.hashed_password = Customer.__hash_password(password)
+        return self
+
     def verify_password(self, password: str):
         if self.__hash_password(password) ==  self.hashed_password:
             self.verified = True

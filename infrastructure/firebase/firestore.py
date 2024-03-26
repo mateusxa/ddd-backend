@@ -70,38 +70,29 @@ class Firestore(Firebase):
                 doc_dict["id"] = doc.id
                 query_result.append(doc_dict)
         return query_result
+    
 
-    # TODO testar esses dois aqui
-    def page_documents_by_criteria(
-        self, collection: str, limit: int, start_after: str | None = None, **kwargs
-    ) -> tuple[ str | None, list[Dict[str, Any]] ]:
-        query = self.client.collection(collection)
+    def page_by_created(self, collection: str, limit: int | None = None, last_created: datetime | None = None, **kwargs):
+        ref = self.client.collection(collection)
+        query = ref.order_by("created", direction=firestore.Query.DESCENDING)
 
         for key, value in kwargs.items():
             if value:
                 query = query.where(key, '==', value)
+        
+        if limit:
+            query = query.limit(limit)
 
-        if start_after:
-            start_doc_ref = self.client.collection('your_collection').document(start_after)
-            query = query.start_after({'__name__': start_doc_ref.id})  
+        if last_created:
+            query = query.start_after({"created": last_created})
 
-        query = query.order_by('created')
-        query = query.limit(limit)
 
-        # Execute the query
         docs = query.stream()
+        docs_list = [doc.to_dict() for doc in docs]
+        last_doc = None if len(docs_list) == 0 else docs_list[-1]
+        last_pop = None if not last_doc else last_doc["created"]
 
-        # Extract data from documents
-        last_doc_id: str | None = None
-        documents = []
-        for doc in docs:
-            document = doc.to_dict()
-            if document:
-                document["id"] = doc.id
-                documents.append(document)
-                last_doc_id = doc.id
-
-        return last_doc_id, documents
+        return last_pop, docs_list
 
 
     def delete_document(self, collection: str, id: str):

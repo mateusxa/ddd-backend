@@ -7,6 +7,7 @@ from infrastructure.firebase.firestore import Firestore
 firestore = Firestore()
 collection = "firestore"
 
+
 def test_create_and_get_document():
     id = str(uuid.uuid4())
     data = {
@@ -95,6 +96,35 @@ def test_get_documents_by_criteria():
 
 #         if not cursor:
 #             break
+
+def test_page_by_created():
+    name = f"testting{randint(1111, 9999)}"
+
+    for _ in range(6):
+        id = str(uuid.uuid4())
+        firestore.create_document(collection=collection, id=id, data={
+        "name": name,
+        "created": datetime.now(timezone.utc)
+    })
+
+    last_created = None
+    while True:
+        old_last_created = last_created
+        last_created, document_list = firestore.page_by_created(
+            collection=collection,
+            last_created=last_created,
+            limit=2,
+            name=name,
+        )
+        if not last_created:
+            break
+
+        if old_last_created:
+            assert old_last_created != last_created
+        assert len(document_list) == 2
+        for document in document_list:
+            if document:
+                assert document["name"] == name
 
 
 def test_delete_document():
