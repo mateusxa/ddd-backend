@@ -1,64 +1,60 @@
 import uuid
-from typing import Protocol
-
-from repository.firestore import FirestoreService
-
-
-class Entity(Protocol):
-    def to_dict(self) -> dict:
-        ...
+from domain.entites.entity import Entity, EntityId
+from infrastructure.firebase.firestore import Firestore
 
 
 class Repository:
 
     def __init__(self):
-        self.conn = FirestoreService()
+        self.conn = Firestore()
 
 
-    def get_by_id(self, obj: object) -> dict | None:
-        return self.conn.get_document_by_id(Repository.__get_class_name_by_id(obj),  str(obj))
+    def get_by_id(self, obj: EntityId) -> dict | None:
+        return self.conn.get_document_by_id(obj.get_class_name(),  obj.value)
 
 
-    def get_all(self, obj: object):
-        return self.conn.get_documents(Repository.__get_class_name(obj))
+    def get_all(self, obj: Entity):
+        return self.conn.get_documents(obj.get_class_name())
 
 
     def save(self, obj: Entity) -> dict:
         id = Repository.__generate_id()
-        class_name = Repository.__get_class_name(obj)
+        class_name = obj.get_class_name()
 
         if self.conn.get_document_by_id(class_name, id):
             raise Exception(f"duplicates uuids {id}")
         
-        obj_dict = obj.to_dict()
-        del obj_dict["id"]
+        obj_dict = Repository.__remove_key(obj.to_dict(), "id")
 
         return self.conn.create_document(
             collection = class_name,
             id = id,
-            data = obj.to_dict(),
+            data = obj_dict,
+        )
+    
+
+    def update(self, obj: Entity) -> dict:
+        id = obj.id.value
+        obj_dict = Repository.__remove_key(obj.to_dict(), "id")
+
+        return self.conn.update_document(
+            collection = obj.get_class_name(),
+            id = obj.id.value,
+            data = obj_dict,
         )
 
-
-    def delete(self, obj: object) -> None:
-        self.conn.delete_document(Repository.__get_class_name_by_id(obj), str(obj))
+    def delete(self, obj: EntityId) -> None:
+        self.conn.delete_document(obj.get_class_name(), obj.value)
     
 
     @staticmethod
     def __generate_id() -> str:
         return str(uuid.uuid4())
-    
 
-    @staticmethod
-    def __get_class_name(obj: object):
-        return Repository.__get_plural_name(obj.__class__.__name__.lower())
     
-
     @staticmethod
-    def __get_class_name_by_id(obj: object):
-        return Repository.__get_plural_name(obj.__class__.__name__.lower()[:-2])
+    def __remove_key(d: dict, key):
+        r = dict(d)
+        del r[key]
+        return r
     
-
-    @staticmethod
-    def __get_plural_name(name: str):
-        return name + "s" if name[-1] != "y" else name[:-1] + "ies"

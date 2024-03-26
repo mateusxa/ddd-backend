@@ -1,27 +1,23 @@
 import hashlib
-from datetime import datetime
+from datetime import datetime, timezone
+from domain.entites.entity import Entity, EntityId
 from utils.constants import SALT
 
 
-class CustomerId:
+class CustomerId(EntityId):
 
-    id: str
-
-    def __init__(self, id: str):
-        self.id = id
-
-    def __str__(self):
-        return self.id
+    def __init__(self, value: str):
+        super().__init__(value)
 
 
-class Customer:
+class Customer(Entity):
 
     company_id: str
     name: str
     email: str
     hashed_password: str | None
     id: CustomerId | None
-    created: datetime | None
+    created: datetime
 
 
     def __init__(
@@ -33,8 +29,7 @@ class Customer:
         self.email = email
         self.id = id
         self.hashed_password = self.__hash_password(password) if password else hashed_password
-        self.created = created or datetime.now()
-
+        self.created = created or datetime.now(timezone.utc)
 
     def __repr__(self):
         return f"Customer(\
@@ -45,10 +40,6 @@ class Customer:
             id={self.id}, \
             created={self.created}\
         )"
-    
-
-    def to_dict(self):
-        return vars(self)
 
 
     @staticmethod

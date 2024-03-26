@@ -1,29 +1,25 @@
-from datetime import datetime
-
-class CompanyId:
-
-    id: str
-
-    def __init__(self, id: str):
-        self.id = id
-
-    def __str__(self):
-        return self.id
+from datetime import datetime, timezone
+from domain.entites.entity import EntityId, Entity
 
 
-class Company:
+class CompanyId(EntityId):
+
+    def __init__(self, value: str):
+        super().__init__(value)
+
+
+class Company(Entity):
     
     name: str
     tax_id: str
     id: CompanyId | None
-    created: datetime | None
-
+    created: datetime
 
     def __init__(self, name: str, tax_id: str, id: CompanyId | None = None, created: datetime | None = None):
         self.name = name
         self.tax_id = tax_id
         self.id = id
-        self.created = created or datetime.now()
+        self.created = created or datetime.now(timezone.utc)
 
 
     def __repr__(self):
@@ -33,10 +29,6 @@ class Company:
             id={self.id}, \
             created={self.created}\
         )"
-
-
-    def to_dict(self):
-        return vars(self)
 
 
     @staticmethod

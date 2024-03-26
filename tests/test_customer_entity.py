@@ -7,7 +7,7 @@ def test_customer_id():
     id = "fake_id"
     customer_id = CustomerId(id)
 
-    assert customer_id.id == id
+    assert customer_id.value == id
     assert str(customer_id) == id
 
 

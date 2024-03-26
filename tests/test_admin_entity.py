@@ -6,7 +6,7 @@ def test_admin_id():
     id = "fake_id"
     admin_id = AdminId(id)
 
-    assert admin_id.id == id
+    assert admin_id.value == id
     assert str(admin_id) == id
 
 

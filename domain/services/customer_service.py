@@ -5,18 +5,23 @@ from domain.entites.customer import Customer
 
 class CustomerService:
 
-    customer: Customer
     repository: Repository
 
-    def __init__(self, customer: Customer):
-        self.customer = customer
+    def __init__(self, ):
         self.repository = Repository()
 
 
-    def get_reports(self):
+    def create(self, customer: Customer) -> Customer:
+        # TODO send email to customers email customer will then update itself
+        customer_dict = self.repository.save(customer)
+        return Customer.from_dict(customer_dict)
+    
+
+    def get_all(self):
+        pass
         # TODO rework
-        matching_dicts = []
-        for d in self.repository.get_all("reports"):
-            if d.get("company_id") == self.customer.company_id:
-                matching_dicts.append(Report.from_dict(d))
-        return matching_dicts
+        # matching_dicts = []
+        # for d in self.repository.get_all(Report(company_id = "", name = "")):
+        #     if d.get("company_id") == self.customer.company_id:
+        #         matching_dicts.append(Report.from_dict(d))
+        # return matching_dicts

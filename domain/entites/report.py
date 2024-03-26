@@ -1,57 +1,46 @@
-from datetime import datetime
+from datetime import datetime, timezone
+from domain.entites.entity import EntityId, Entity
 
 
-class ReportId:
+class ReportId(EntityId):
 
-    id: str
-
-    def __init__(self, id: str):
-        self.id = id
-
-    def __str__(self):
-        return self.id
+    def __init__(self, value: str):
+        super().__init__(value)
 
 
-class Report:
+class Report(Entity):
 
     company_id: str
     name: str
-    data: str | bytes | None
     bucket_url: str | None
     id: ReportId | None
-    created: datetime | None
+    created: datetime
 
 
     def __init__(
-            self, company_id: str, name: str, data: str | bytes | None = None, bucket_url: str | None = None, 
+            self, company_id: str, name: str, bucket_url: str | None = None, 
             id: ReportId | None = None, created: datetime | None = None
         ):
         self.company_id = company_id
         self.name = name
-        self.data = data
         self.bucket_url = bucket_url
         self.id = id
-        self.created = created or datetime.now()
+        self.created = created or datetime.now(timezone.utc)
 
 
     def __repr__(self):
         return f"Report(\
             company_id={self.company_id}, \
             name={self.name}, \
-            data={self.data}, \
             bucket_url={self.bucket_url}, \
             id={self.id}, \
             created={self.created}\
         )"
     
 
-    def to_dict(self):
-        return vars(self)
-
-
     @staticmethod
     def from_dict(source: dict):
-        if not all(attr in source for attr in ["id", "company_id", "name", "bucket_url", "created"]):
+        if not all(attr in source for attr in Report.__annotations__):
             raise Exception(f"dict incomplete! {source}")
         return Report(
             id = ReportId(source["id"]),

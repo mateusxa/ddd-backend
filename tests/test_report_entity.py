@@ -8,7 +8,7 @@ def test_report_id():
     id = "fake_id"
     report_id = ReportId(id)
 
-    assert report_id.id == id
+    assert report_id.value == id
     assert str(report_id) == id
 
 
@@ -21,7 +21,6 @@ def test_repr():
     report_string = f"Report(\
             company_id={report.company_id}, \
             name={report.name}, \
-            data={report.data}, \
             bucket_url={report.bucket_url}, \
             id={report.id}, \
             created={report.created}\
