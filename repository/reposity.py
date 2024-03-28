@@ -15,11 +15,11 @@ class Repository:
 
 
     def get_by_fields(self, database, limit: int | None = None, created_before: datetime | None = None, created_after: datetime | None = None, **kwargs):
-        return self.conn.get_documents_by_criteria(collection=database, limit=limit, created_before=created_before, created_after=created_after, kwargs=kwargs)
+        return self.conn.get_documents_by_criteria(collection=database, limit=limit, created_before=created_before, created_after=created_after, **kwargs)
 
 
     def page(self, database, last_created: datetime | None = None, limit: int | None = None, **kwargs):
-        return self.conn.page_by_created(collection=database, limit=limit, last_created=last_created, kwargs=kwargs)
+        return self.conn.page_by_created(collection=database, limit=limit, last_created=last_created, **kwargs)
 
 
     def get_all(self, obj: Entity):

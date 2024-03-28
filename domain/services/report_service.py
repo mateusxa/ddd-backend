@@ -23,10 +23,12 @@ class ReportService:
         if not local_path:
             raise Exception(f"Cannot save an report file without a file(path/to/file): {report}")
 
-        report.bucket_url = Storage.upload_file_to_folder(
-            folder = report.get_class_name(),
-            filename = report.id.value,
-            file_path = local_path
+        report = report.set(
+            bucket_url=Storage.upload_file_to_folder(
+                folder = report.get_class_name(),
+                filename = report.id.value,
+                file_path = local_path
+            )
         )
         return Report.from_dict(self.repository.update(report))
     

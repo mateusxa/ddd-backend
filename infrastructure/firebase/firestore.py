@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict, List
 from firebase_admin import firestore
+from google.cloud.firestore_v1.base_query import FieldFilter
 from infrastructure.firebase import Firebase
 
 
@@ -52,12 +53,12 @@ class Firestore(Firebase):
 
         for key, value in kwargs.items():
             if value:
-                query = query.where(key, '==', value)
+                query = query.where(filter=FieldFilter(key, '==', value))
 
         if created_before:
-            query = query.where('created_at', '<=', created_before).order_by('created_at')
+            query = query.where(filter=FieldFilter('created_at', '<=', created_before)).order_by('created_at')
         if created_after:
-            query = query.where('created_at', '>=', created_after).order_by('created_at')
+            query = query.where(filter=FieldFilter('created_at', '>=', created_after)).order_by('created_at')
         if limit:
             query = query.limit(limit)
 
@@ -78,7 +79,7 @@ class Firestore(Firebase):
 
         for key, value in kwargs.items():
             if value:
-                query = query.where(key, '==', value)
+                query = query.where(filter=FieldFilter(key, '==', value))
         
         if limit:
             query = query.limit(limit)

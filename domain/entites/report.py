@@ -38,6 +38,12 @@ class Report(Entity):
         )"
     
 
+    def set(self, bucket_url: str | None = None):
+        if bucket_url:
+            self.bucket_url = bucket_url
+        return self
+
+
     @staticmethod
     def from_dict(source: dict):
         if not all(attr in source for attr in Report.__annotations__):

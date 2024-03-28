@@ -1,6 +1,7 @@
-from datetime import datetime
+import os
+import jwt
+from datetime import datetime, timezone
 from repository.reposity import Repository
-from domain.entites.report import Report
 from domain.entites.customer import Customer, CustomerId
 
 
@@ -14,9 +15,24 @@ class CustomerService:
 
 
     def create(self, customer: Customer) -> Customer:
-        # TODO send email to customers email customer will then update itself
         customer_dict = self.repository.save(customer)
         return Customer.from_dict(customer_dict)
+    
+
+    def create_with_token(self, token: str, name: str, email: str, password: str):
+        decoded_payload = jwt.decode(token, os.environ["JWT_SECRET"], algorithms=['HS256'])
+
+        if datetime.now(timezone.utc).timestamp() > float(decoded_payload["expires_after"]):
+            raise Exception("Token expired!")
+        
+        return self.create(
+            Customer(
+                company_id=decoded_payload["company_id"],
+                name=name,
+                email=email,
+                password=password,
+            )
+        )
     
 
     def get_by_id(self, customer_id: CustomerId):

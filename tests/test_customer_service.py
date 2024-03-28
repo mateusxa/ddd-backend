@@ -1,7 +1,13 @@
-from random import randint
+import os
 import uuid
+from random import randint
+from dotenv import load_dotenv
 from domain.entites.customer import Customer
+from domain.services.admin_service import AdminService
+from domain.services.company_service import CompanyService
 from domain.services.customer_service import CustomerService
+
+load_dotenv()
 
 
 def test_create_customer():
@@ -69,4 +75,27 @@ def test_page_customer():
         if old_last_created:
             assert old_last_created != last_created
         # assert len(document_list) == 2
+            
+def test_create_with_token():
+    company_service = CompanyService()
+    company = company_service.get_by_name("TestCompany")[0]
+    assert company.id
+    admin_service = AdminService()
+    token = admin_service.invite_customer(os.environ["TARGET_EMAIL"], company_id=company.id)
 
+
+    name = "name"
+    email = "email"
+    password = "password"
+    custome_service = CustomerService()
+    customer = custome_service.create_with_token(
+        token=token,
+        name=name,
+        email=email,
+        password=password,
+    )
+
+    assert customer.company_id == company.id.value
+    assert customer.name == name
+    assert customer.email == email
+    assert customer.hashed_password != password
