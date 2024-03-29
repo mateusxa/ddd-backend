@@ -29,14 +29,36 @@ class AdminService:
         raise Exception(f"No admins with {admin_id}")
     
 
+    def get_by_email(self, email: str):
+        admin_list = [Admin.from_dict(admin_dict) for admin_dict in self.repository.get_by_fields("admins", email=email)]
+        return admin_list[0]
+
+
     def update(self, admin_id: AdminId, password: str | None = None) -> Admin:
         admin = self.get_by_id(admin_id)
         return admin.set(password)
     
 
-    def page(self, last_created: datetime | None = None, limit: int | None = None):
-        return self.repository.page("repositories", last_created=last_created, limit=limit)
+    def page(self, cursor: str | None = None, limit: int | None = None):
+        new_cursor, admins_dict = self.repository.page("admins", cursor=cursor, limit=limit)
+        return new_cursor, [Admin.from_dict(admin) for admin in admins_dict if admin]
     
+
+    def get_token_by_email_and_password(self, email: str, password: str) -> str:
+        admin = self.get_by_email(email)
+        if not admin or not admin.id:
+            raise Exception("Invalid email!")
+        if not admin.is_password_valid(password):
+            raise Exception("Invalid password!")
+        token = jwt.encode({
+            "id": admin.id.value
+        }, os.environ['ADMIN_JWT_SECRET'])
+        return token
+
+    @staticmethod
+    def get_id_by_token(token: str) -> AdminId:
+        payload = jwt.decode(token, os.environ['ADMIN_JWT_SECRET'], verify=True, algorithms=["HS256"])
+        return AdminId(payload['id'])
 
     def invite_customer(self, customer_email: str, company_id: CompanyId):
         company = CompanyService().get_by_id(company_id)

@@ -28,5 +28,6 @@ class CompanyService:
         return [Company.from_dict(company_dict) for company_dict in self.repository.get_by_fields("companies", name=name)]
     
 
-    def page(self, last_created: datetime | None = None, limit: int | None = None):
-        return self.repository.page("companies", last_created=last_created, limit=limit)
+    def page(self, cursor: str | None = None, limit: int | None = None):
+        new_cursor, companies_dict = self.repository.page("companies", cursor=cursor, limit=limit)
+        return new_cursor, [Company.from_dict(company) for company in companies_dict if company]

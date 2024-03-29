@@ -59,7 +59,7 @@ class Admin(Entity):
         )
     
 
-    def verify_password(self, password: str):
+    def is_password_valid(self, password: str):
         if self.__hash_password(password) ==  self.hashed_password:
             self.verified = True
             return True

@@ -113,7 +113,7 @@ def test_hash_password():
     assert admin.hashed_password != password
 
 
-def test_verify_password():
+def test_is_password_valid():
     name = "name"
     email = "email"
     password = "password"
@@ -125,10 +125,10 @@ def test_verify_password():
     )
 
     assert admin.hashed_password != password
-    assert admin.verify_password(password)
+    assert admin.is_password_valid(password)
 
 
-def test_verify_password_fail():
+def test_is_password_valid_fail():
     name = "name"
     email = "email"
     password = "password"
@@ -139,4 +139,4 @@ def test_verify_password_fail():
         password = password,
     )
 
-    assert not admin.verify_password("wrong_pasword")
+    assert not admin.is_password_valid("wrong_pasword")

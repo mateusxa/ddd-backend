@@ -1,8 +1,9 @@
 import os
 import uuid
+import pytest
 from random import randint
 from dotenv import load_dotenv
-from domain.entites.customer import Customer
+from domain.entites.customer import Customer, CustomerId
 from domain.services.admin_service import AdminService
 from domain.services.company_service import CompanyService
 from domain.services.customer_service import CustomerService
@@ -46,8 +47,48 @@ def test_create_and_update_customer():
     new_password = "new_password"
     new_customer = customer_service.update(customer_id=customer.id, password=new_password)
 
-    assert new_customer.verify_password(new_password)
+    assert new_customer.is_password_valid(new_password)
 
+def test_get_token_by_email_and_password_and_get_id_by_token():
+    name = "name"
+    email = "email"
+    password = "password"
+    company_id = str(uuid.uuid4())
+    
+    customer_service = CustomerService()
+    customer = customer_service.create(Customer(
+        company_id=company_id,
+        name=name,
+        email=email,
+        password=password,
+    ))
+    token = customer_service.get_token_by_email_and_password(email=customer.email, password=password)
+
+    assert token
+
+    customer_id, company_id = CustomerService.get_id_and_company_id_by_token(token)
+    got_customer = customer_service.get_by_id(CustomerId(customer_id))
+
+    assert got_customer.name == name
+    assert got_customer.company_id == company_id
+    assert got_customer.email == email
+
+
+def test_fail_get_token_by_email_and_password():
+    name = "name"
+    email = "email"
+    company_id = str(uuid.uuid4())
+    
+    customer_service = CustomerService()
+    customer = customer_service.create(Customer(
+        company_id=company_id,
+        name=name,
+        email=email,
+        password="password",
+    ))
+
+    with pytest.raises(Exception):
+        customer_service.get_token_by_email_and_password(email=customer.email, password="wrong_password")
 
 def test_page_customer():
     company_id = str(uuid.uuid4())
@@ -62,18 +103,18 @@ def test_page_customer():
             password="password",
         ))
 
-    last_created = None
+    cursor = None
     while True:
-        old_last_created = last_created
-        last_created, document_list = customer_service.page(
-            last_created=last_created,
+        old_cursor = cursor
+        cursor, document_list = customer_service.page(
+            cursor=cursor,
             limit=2,
         )
-        if not last_created:
+        if not cursor:
             break
 
-        if old_last_created:
-            assert old_last_created != last_created
+        if old_cursor:
+            assert old_cursor != cursor
         # assert len(document_list) == 2
             
 def test_create_with_token():

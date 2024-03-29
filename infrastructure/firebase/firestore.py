@@ -87,11 +87,16 @@ class Firestore(Firebase):
         if last_created:
             query = query.start_after({"created": last_created})
 
-
         docs = query.stream()
-        docs_list = [doc.to_dict() for doc in docs]
+        docs_list = []
+        for doc in docs:
+            doc_dict = doc.to_dict()
+            if doc_dict:
+                doc_dict["id"] = doc.id
+                docs_list.append(doc_dict)
+
         last_doc = None if len(docs_list) == 0 else docs_list[-1]
-        last_pop = None if not last_doc else last_doc["created"]
+        last_pop: datetime | None = None if not last_doc else last_doc["created"]
 
         return last_pop, docs_list
 

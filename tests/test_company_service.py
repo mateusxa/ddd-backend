@@ -58,17 +58,17 @@ def test_page_company():
             tax_id = "31.899.356/0001-32",
         ))
 
-    last_created = None
+    cursor = None
     while True:
-        old_last_created = last_created
-        last_created, document_list = company_service.page(
-            last_created=last_created,
+        old_cursor = cursor
+        cursor, document_list = company_service.page(
+            cursor=cursor,
             limit=2,
         )
-        if not last_created:
+        if not cursor:
             break
 
-        if old_last_created:
-            assert old_last_created != last_created
+        if old_cursor:
+            assert old_cursor != cursor
         # assert len(document_list) == 2
 

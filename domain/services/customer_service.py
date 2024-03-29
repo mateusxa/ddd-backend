@@ -42,10 +42,32 @@ class CustomerService:
         raise Exception(f"No customers with {customer_id}")
     
 
+    def get_by_email(self, email: str):
+        customer_list = [Customer.from_dict(customer_dict) for customer_dict in self.repository.get_by_fields("customers", email=email)]
+        return customer_list[0]
+
+    def get_token_by_email_and_password(self, email: str, password: str) -> str:
+        customer = self.get_by_email(email)
+        if not customer or not customer.id:
+            raise Exception("Invalid email!")
+        if not customer.is_password_valid(password):
+            raise Exception("Invalid password!")
+        token = jwt.encode({
+            "id": customer.id.value,
+            "companyId": customer.company_id,
+        }, os.environ['CUSTOMER_JWT_SECRET'])
+        return token
+
+    @staticmethod
+    def get_id_and_company_id_by_token(token: str) -> tuple[str, str]:
+        payload = jwt.decode(token, os.environ['CUSTOMER_JWT_SECRET'], verify=True, algorithms=["HS256"])
+        return payload["id"], payload["companyId"]
+
     def update(self, customer_id: CustomerId, password: str | None = None) -> Customer:
         customer = self.get_by_id(customer_id)
         return customer.set(password)
     
 
-    def page(self, last_created: datetime | None = None, limit: int | None = None):
-        return self.repository.page("customers", last_created=last_created, limit=limit)
+    def page(self, cursor: str | None = None, limit: int | None = None):
+        new_cursor, customers_dict = self.repository.page("customers", cursor=cursor, limit=limit)
+        return new_cursor, [Customer.from_dict(customer) for customer in customers_dict if customer]

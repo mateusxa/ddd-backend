@@ -67,6 +67,12 @@ class Customer(Entity):
             return True
         return False
     
+    def is_password_valid(self, password: str):
+        if self.__hash_password(password) ==  self.hashed_password:
+            self.verified = True
+            return True
+        return False
+    
     @staticmethod
     def __hash_password(password: str) -> str:
         salted_password = f"{password}:{SALT}".encode('utf-8')

@@ -70,16 +70,16 @@ def test_page_report():
             company_id=company_id,
         ), local_path="tests/file.pdf")
 
-    last_created = None
+    cursor = None
     while True:
-        old_last_created = last_created
-        last_created, document_list = report_service.page(
-            last_created=last_created,
+        old_cursor = cursor
+        cursor, document_list = report_service.page(
+            cursor=cursor,
             limit=2,
         )
-        if not last_created:
+        if not cursor:
             break
 
-        if old_last_created:
-            assert old_last_created != last_created
+        if old_cursor:
+            assert old_cursor != cursor
         # assert len(document_list) == 2

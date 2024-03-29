@@ -1,4 +1,3 @@
-from datetime import datetime
 from infrastructure.storage.storage import Storage
 from repository.reposity import Repository
 from domain.entites.report import Report, ReportId
@@ -48,6 +47,7 @@ class ReportService:
         raise Exception(f"No reports with {report_id}")
     
 
-    def page(self, last_created: datetime | None = None, limit: int | None = None, company_id: str | None = None):
-        return self.repository.page("reports", last_created=last_created, limit=limit, company_id=company_id)
+    def page(self, cursor: str | None = None, limit: int | None = None, company_id: str | None = None):
+        new_cursor, reports_dict = self.repository.page("reports", cursor=cursor, limit=limit, company_id=company_id)
+        return new_cursor, [Report.from_dict(report) for report in reports_dict if report]
     

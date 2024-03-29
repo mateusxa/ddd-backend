@@ -1,5 +1,6 @@
+from uuid import uuid4
 from datetime import datetime
-import uuid
+from base64 import b64decode, b64encode
 from domain.entites.entity import Entity, EntityId
 from infrastructure.firebase.firestore import Firestore
 
@@ -18,9 +19,16 @@ class Repository:
         return self.conn.get_documents_by_criteria(collection=database, limit=limit, created_before=created_before, created_after=created_after, **kwargs)
 
 
-    def page(self, database, last_created: datetime | None = None, limit: int | None = None, **kwargs):
-        return self.conn.page_by_created(collection=database, limit=limit, last_created=last_created, **kwargs)
+    def page(self, database, cursor: str | None = None, limit: int | None = None, **kwargs):
+        last_created = datetime.fromtimestamp(
+            float(b64decode(cursor.encode("utf-8")).decode("utf-8"))
+        ) if cursor else None
+        new_cursor, data_list = self.conn.page_by_created(collection=database, limit=limit, last_created=last_created, **kwargs)
+        new_cursor = b64encode(
+            str(new_cursor.timestamp()).encode("utf-8")
+        ).decode("utf-8") if new_cursor else None
 
+        return new_cursor, data_list
 
     def get_all(self, obj: Entity):
         return self.conn.get_documents(obj.get_class_name())
@@ -57,7 +65,7 @@ class Repository:
 
     @staticmethod
     def __generate_id() -> str:
-        return str(uuid.uuid4())
+        return str(uuid4())
 
     
     @staticmethod
