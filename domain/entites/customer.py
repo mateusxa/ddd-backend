@@ -1,7 +1,7 @@
+import os
 import hashlib
 from datetime import datetime, timezone
 from domain.entites.entity import Entity, EntityId
-from utils.constants import SALT
 
 
 class CustomerId(EntityId):
@@ -75,7 +75,7 @@ class Customer(Entity):
     
     @staticmethod
     def __hash_password(password: str) -> str:
-        salted_password = f"{password}:{SALT}".encode('utf-8')
+        salted_password = f"{password}:{os.environ['PASSWORD_JWT_SECRET']}".encode('utf-8')
         hash_algorithm = hashlib.sha256()
         hash_algorithm.update(salted_password)        
         return hash_algorithm.hexdigest()

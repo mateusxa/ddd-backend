@@ -20,7 +20,7 @@ class CustomerService:
     
 
     def create_with_token(self, token: str, name: str, email: str, password: str):
-        decoded_payload = jwt.decode(token, os.environ["JWT_SECRET"], algorithms=['HS256'])
+        decoded_payload = jwt.decode(token, os.environ["INVITE_JWT_SECRET"], algorithms=['HS256'])
 
         if datetime.now(timezone.utc).timestamp() > float(decoded_payload["expires_after"]):
             raise Exception("Token expired!")

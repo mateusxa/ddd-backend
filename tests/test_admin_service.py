@@ -1,8 +1,11 @@
-from random import randint
-
 import pytest
+from random import randint
+from dotenv import load_dotenv
 from domain.entites.admin import Admin
 from domain.services.admin_service import AdminService
+
+
+load_dotenv()
 
 
 def test_create_and_get_admin():

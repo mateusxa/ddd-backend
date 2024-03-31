@@ -67,7 +67,7 @@ class AdminService:
             'expires_after': (datetime.now(timezone.utc) + timedelta(days=1)).timestamp(),
         }
 
-        jwt_token = jwt.encode(data, os.environ["JWT_SECRET"], algorithm='HS256')
+        jwt_token = jwt.encode(data, os.environ["INVITE_JWT_SECRET"], algorithm='HS256')
         url = f"https://{os.environ['DOMAIN']}/invite/{jwt_token}" 
 
         with open('utils/invite_email_template.html', 'r', encoding='utf-8') as file:

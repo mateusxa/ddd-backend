@@ -8,6 +8,7 @@ from domain.services.admin_service import AdminService
 from domain.services.company_service import CompanyService
 from domain.services.customer_service import CustomerService
 
+
 load_dotenv()
 
 
