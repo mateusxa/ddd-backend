@@ -1,11 +1,5 @@
 from datetime import datetime, timezone
-from domain.entites.entity import EntityId, Entity
-
-
-class ReportId(EntityId):
-
-    def __init__(self, value: str):
-        super().__init__(value)
+from domain.entites.entity import Entity
 
 
 class Report(Entity):
@@ -13,13 +7,13 @@ class Report(Entity):
     company_id: str
     name: str
     bucket_url: str | None
-    id: ReportId | None
+    id: str | None
     created: datetime
 
 
     def __init__(
             self, company_id: str, name: str, bucket_url: str | None = None, 
-            id: ReportId | None = None, created: datetime | None = None
+            id: str | None = None, created: datetime | None = None
         ):
         self.company_id = company_id
         self.name = name
@@ -49,7 +43,7 @@ class Report(Entity):
         if not all(attr in source for attr in Report.__annotations__):
             raise Exception(f"dict incomplete! {source}")
         return Report(
-            id = ReportId(source["id"]),
+            id = source["id"],
             company_id = source["company_id"],
             name = source["name"],
             bucket_url = source["bucket_url"],

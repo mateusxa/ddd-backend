@@ -1,7 +1,7 @@
+from logging import warning
 from uuid import uuid4
 from datetime import datetime
 from base64 import b64decode, b64encode
-from domain.entites.entity import Entity, EntityId
 from infrastructure.firebase.firestore import Firestore
 
 
@@ -11,56 +11,74 @@ class Repository:
         self.conn = Firestore()
 
 
-    def get_by_id(self, obj: EntityId) -> dict | None:
-        return self.conn.get_document_by_id(obj.get_class_name(),  obj.value)
+    def get_by_id(self, repository: str, obj_id: str) -> dict | None:
+        return self.conn.get_document_by_id(repository,  obj_id)
 
 
-    def get_by_fields(self, database, limit: int | None = None, created_before: datetime | None = None, created_after: datetime | None = None, **kwargs):
-        return self.conn.get_documents_by_criteria(collection=database, limit=limit, created_before=created_before, created_after=created_after, **kwargs)
+    def get_by_fields(
+            self, repository: str, limit: int | None = None, created_before: datetime | None = None, 
+            created_after: datetime | None = None, **kwargs
+        ) -> list[dict]:
+        return self.conn.get_documents_by_criteria(
+            collection=repository, 
+            limit=limit, 
+            created_before=created_before, 
+            created_after=created_after, 
+            **kwargs
+        )
 
 
-    def page(self, database, cursor: str | None = None, limit: int | None = None, **kwargs):
-        last_created = datetime.fromtimestamp(
-            float(b64decode(cursor.encode("utf-8")).decode("utf-8"))
-        ) if cursor else None
-        new_cursor, data_list = self.conn.page_by_created(collection=database, limit=limit, last_created=last_created, **kwargs)
-        new_cursor = b64encode(
-            str(new_cursor.timestamp()).encode("utf-8")
-        ).decode("utf-8") if new_cursor else None
+    def page(self, repository: str, cursor: str | None = None, limit: int | None = None, **kwargs)-> tuple[str | None, list[dict]]:
+        try:
+            last_created = datetime.strptime(
+                b64decode(cursor).decode("utf-8"), "%Y-%m-%d %H:%M:%S %z"
+            ) if cursor else None
+        except UnicodeDecodeError as e:
+            warning(f"got cursor: {cursor} and failed to decode {e}")
+            last_created = None
+
+        new_cursor, data_list = self.conn.page_by_created(
+            collection=repository, 
+            limit=limit, 
+            last_created=last_created,
+            **kwargs
+        )
+        new_cursor = None if not new_cursor else b64encode(
+            new_cursor.strftime("%Y-%m-%d %H:%M:%S %z").encode("utf-8")
+        ).decode("utf-8")
 
         return new_cursor, data_list
 
-    def get_all(self, obj: Entity):
-        return self.conn.get_documents(obj.get_class_name())
+    def get_all(self, repository: str) -> list[dict]:
+        return self.conn.get_documents(repository)
 
 
-    def save(self, obj: Entity) -> dict:
+    def save(self, repository: str,  dict_data: dict) -> dict:
         id = Repository.__generate_id()
-        class_name = obj.get_class_name()
 
-        if self.conn.get_document_by_id(class_name, id):
+        if self.conn.get_document_by_id(repository, id):
             raise Exception(f"duplicates uuids {id}")
         
-        obj_dict = Repository.__remove_key(obj.to_dict(), "id")
+        obj_dict = Repository.__remove_key(dict_data, "id")
 
         return self.conn.create_document(
-            collection = class_name,
+            collection = repository,
             id = id,
             data = obj_dict,
         )
     
 
-    def update(self, obj: Entity) -> dict:
-        obj_dict = Repository.__remove_key(obj.to_dict(), "id")
+    def update(self, repository: str,  dict_data: dict) -> dict:
+        dict_data_without_id = Repository.__remove_key(dict_data, "id")
 
         return self.conn.update_document(
-            collection = obj.get_class_name(),
-            id = obj.id.value,
-            data = obj_dict,
+            collection = repository,
+            id = dict_data["id"],
+            data = dict_data_without_id,
         )
 
-    def delete(self, obj: EntityId) -> None:
-        self.conn.delete_document(obj.get_class_name(), obj.value)
+    def delete(self, repository: str, obj_id: str) -> None:
+        self.conn.delete_document(repository, obj_id)
     
 
     @staticmethod
@@ -73,4 +91,3 @@ class Repository:
         r = dict(d)
         del r[key]
         return r
-    

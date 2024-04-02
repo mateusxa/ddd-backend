@@ -1,8 +1,4 @@
-import uuid
-import pytest
-from domain.entites.report import Report, ReportId
 from domain.entites.company import Company
-from domain.entites.customer import Customer
 from domain.services.company_service import CompanyService
 from domain.services.company_service import CompanyService
 

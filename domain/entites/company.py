@@ -1,21 +1,15 @@
 from datetime import datetime, timezone
-from domain.entites.entity import EntityId, Entity
-
-
-class CompanyId(EntityId):
-
-    def __init__(self, value: str):
-        super().__init__(value)
+from domain.entites.entity import Entity
 
 
 class Company(Entity):
     
     name: str
     tax_id: str
-    id: CompanyId | None
+    id: str | None
     created: datetime
 
-    def __init__(self, name: str, tax_id: str, id: CompanyId | None = None, created: datetime | None = None):
+    def __init__(self, name: str, tax_id: str, id: str | None = None, created: datetime | None = None):
         self.name = name
         self.tax_id = tax_id
         self.id = id
@@ -38,6 +32,6 @@ class Company(Entity):
         return Company(
             name = source["name"],
             tax_id = source["tax_id"],
-            id = CompanyId(source["id"]),
+            id = source["id"],
             created = source["created"],
         )

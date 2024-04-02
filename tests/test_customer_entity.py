@@ -1,13 +1,13 @@
 import pytest
-from domain.entites.customer import Customer, CustomerId
+from domain.entites.customer import Customer
 
 
 
 def test_customer_id():
     id = "fake_id"
-    customer_id = CustomerId(id)
+    customer_id = id
 
-    assert customer_id.value == id
+    assert customer_id == id
     assert str(customer_id) == id
 
 
@@ -129,7 +129,7 @@ def test_hash_password():
     assert customer.hashed_password != password
 
 
-def test_verify_password():
+def test_is_password_valid():
     company_id = "id"
     name = "name"
     email = "email"
@@ -143,10 +143,10 @@ def test_verify_password():
     )
 
     assert customer.hashed_password != password
-    assert customer.verify_password(password)
+    assert customer.is_password_valid(password)
 
 
-def test_verify_password_fail():
+def test_is_password_valid_fail():
     company_id = "id"
     name = "name"
     email = "email"
@@ -159,4 +159,4 @@ def test_verify_password_fail():
         password = password,
     )
 
-    assert not customer.verify_password("wrong_password")
+    assert not customer.is_password_valid("wrong_password")

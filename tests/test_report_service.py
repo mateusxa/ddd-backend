@@ -1,10 +1,7 @@
-from random import randint
 import uuid
 import pytest
-from domain.entites.report import Report, ReportId
-from domain.entites.company import Company
+from random import randint
 from domain.entites.report import Report
-from domain.services.admin_service import AdminService
 from domain.services.report_service import ReportService
 
 
@@ -34,7 +31,7 @@ def test_get_report_fail():
     report_service = ReportService()
 
     with pytest.raises(Exception):
-        report_service.get_by_id(ReportId("wrong_id"))
+        report_service.get_by_id("wrong_id")
 
 
 def test_delete_and_get_report():

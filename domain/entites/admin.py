@@ -1,31 +1,24 @@
-import os
-import hashlib
 from datetime import datetime, timezone
-from domain.entites.entity import Entity, EntityId
+from domain.entites.entity import UserEntity
 
 
-class AdminId(EntityId):
 
-    def __init__(self, value: str):
-        super().__init__(value)
-
-
-class Admin(Entity):
+class Admin(UserEntity):
     
     name: str
     email: str
     hashed_password: str | None
-    id: AdminId | None
+    id: str | None
     created: datetime
 
 
     def __init__(
             self, name: str, email: str, password: str | None = None, hashed_password: str | None = None, 
-            id: AdminId | None = None, created: datetime | None = None
+            id: str | None = None, created: datetime | None = None
         ):
         self.name = name
         self.email = email
-        self.hashed_password = self.__hash_password(password) if password else hashed_password
+        self.hashed_password = self.hash_password(password) if password else hashed_password
         self.id = id
         self.created = created or datetime.now(timezone.utc)
 
@@ -42,7 +35,7 @@ class Admin(Entity):
 
     def set(self, password: str | None = None):
         if password:
-            self.hashed_password = Admin.__hash_password(password)
+            self.hashed_password = Admin.hash_password(password)
         return self
 
 
@@ -51,24 +44,9 @@ class Admin(Entity):
         if not all(attr in source for attr in Admin.__annotations__):
             raise Exception(f"dict incomplete! {source}")
         return Admin(
-            id = AdminId(source["id"]),
+            id = source["id"],
             name = source["name"],
             email = source["email"],
             hashed_password = source["hashed_password"],
             created = source["created"],
         )
-    
-
-    def is_password_valid(self, password: str):
-        if self.__hash_password(password) ==  self.hashed_password:
-            self.verified = True
-            return True
-        return False
-
-
-    @staticmethod
-    def __hash_password(password: str) -> str:
-        salted_password = f"{password}:{os.environ['PASSWORD_JWT_SECRET']}".encode('utf-8')
-        hash_algorithm = hashlib.sha256()
-        hash_algorithm.update(salted_password)        
-        return hash_algorithm.hexdigest()

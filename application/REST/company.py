@@ -1,6 +1,5 @@
 from flask import Blueprint, jsonify, request
-
-from domain.entites.company import Company, CompanyId
+from domain.entites.company import Company
 from domain.services.company_service import CompanyService
 
 
@@ -19,7 +18,7 @@ def get_companies():
 
 @companies_blueprint.route('/companies/<company_id>', methods=['GET'])
 def get_company(company_id):
-    company = company_service.get_by_id(CompanyId(company_id))
+    company = company_service.get_by_id(company_id)
     if not company:
         return jsonify({'error': 'Company not found'}), 404
     return jsonify(company.to_dict())
@@ -31,11 +30,11 @@ def create_company():
     if not data:
         return jsonify({'error': 'Invalid json'}), 404  
     
-    if data.get('name'):
+    if not data.get('name'):
         return jsonify({'error': 'name not found!'}), 404
     name = data.get("name")
 
-    if data.get('taxId'):
+    if not data.get('taxId'):
         return jsonify({'error': 'taxId not found!'}), 404
     tax_id = data.get('taxId')
 

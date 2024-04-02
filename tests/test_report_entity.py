@@ -1,14 +1,13 @@
 import uuid
-
 import pytest
-from domain.entites.report import Report, ReportId
+from domain.entites.report import Report
 
 
 def test_report_id():
     id = "fake_id"
-    report_id = ReportId(id)
+    report_id = id
 
-    assert report_id.value == id
+    assert report_id == id
     assert str(report_id) == id
 
 

@@ -1,7 +1,6 @@
 from flask import Blueprint, jsonify, request
-
 from application.REST import admin_token_required, customer_token_required
-from domain.entites.report import Report, ReportId
+from domain.entites.report import Report
 from domain.services.report_service import ReportService
 
 
@@ -22,7 +21,7 @@ def get_reports():
 @reports_blueprint.route('/reports/<report_id>', methods=['GET'])
 @customer_token_required
 def get_report(report_id):
-    report = report_service.get_by_id(ReportId(report_id))
+    report = report_service.get_by_id(report_id)
     if not report:
         return jsonify({'error': 'Report not found'}), 404
     return jsonify(report.to_dict())
@@ -35,11 +34,11 @@ def create_report():
     if not data:
         return jsonify({'error': 'Invalid json'}), 404  
     
-    if data.get('name'):
+    if not data.get('name'):
         return jsonify({'error': 'name not found!'}), 404
     name = data.get("name")
 
-    if data.get('companyId'):
+    if not data.get('companyId'):
         return jsonify({'error': 'companyId not found!'}), 404
     company_id = data.get('companyId')
 

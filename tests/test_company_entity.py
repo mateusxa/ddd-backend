@@ -1,13 +1,5 @@
 import pytest
-from domain.entites.company import Company, CompanyId
-
-
-def test_company_id():
-    id = "fake_id"
-    company_id = CompanyId(id)
-
-    assert company_id.value == id
-    assert str(company_id) == id
+from domain.entites.company import Company
 
 
 def test_repr():

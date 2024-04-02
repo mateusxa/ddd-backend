@@ -1,7 +1,6 @@
 from flask import Blueprint, jsonify, request
-
 from application.REST import admin_token_required
-from domain.entites.customer import Customer, CustomerId
+from domain.entites.customer import Customer
 from domain.services.customer_service import CustomerService
 
 
@@ -22,7 +21,7 @@ def get_customers():
 @customers_blueprint.route('/customers/<customer_id>', methods=['GET'])
 @admin_token_required
 def get_customer(customer_id):
-    customer = customer_service.get_by_id(CustomerId(customer_id))
+    customer = customer_service.get_by_id(customer_id)
     if not customer:
         return jsonify({'error': 'Customer not found'}), 404
     return jsonify(customer.to_dict())
@@ -35,19 +34,19 @@ def create_customer():
     if not data:
         return jsonify({'error': 'Invalid json'}), 404  
     
-    if data.get('companyId'):
+    if not data.get('companyId'):
         return jsonify({'error': 'companyId not found!'}), 404
     company_id = data.get("companyId")
     
-    if data.get('name'):
+    if not data.get('name'):
         return jsonify({'error': 'name not found!'}), 404
     name = data.get("name")
 
-    if data.get('email'):
+    if not data.get('email'):
         return jsonify({'error': 'email not found!'}), 404
     email = data.get('email')
 
-    if data.get('password'):
+    if not data.get('password'):
         return jsonify({'error': 'password not found!'}), 404
     password = data.get('password')
 
@@ -67,11 +66,11 @@ def create_customer_token():
     if not data:
         return jsonify({'error': 'Invalid json'}), 404  
 
-    if data.get('email'):
+    if not data.get('email'):
         return jsonify({'error': 'email not found!'}), 404
     email = data.get('email')
 
-    if data.get('password'):
+    if not data.get('password'):
         return jsonify({'error': 'password not found!'}), 404
     password = data.get('password')
 

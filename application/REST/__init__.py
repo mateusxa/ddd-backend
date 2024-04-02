@@ -14,7 +14,7 @@ def admin_token_required(f):
             return jsonify({'error': 'Missing token'}), 401
 
         try:
-            kwargs['admin_id'] = AdminService.get_id_by_token(token).value
+            kwargs['admin_id_token'] = AdminService.get_id_by_token(token)
         except jwt.ExpiredSignatureError:
             return jsonify({'error': 'Token expired'}), 401
         except jwt.InvalidTokenError:

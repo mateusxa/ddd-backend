@@ -1,5 +1,5 @@
-from random import randint
 import pytest
+from random import randint
 from infrastructure.firebase.storage import FirebaseStorage
 
 

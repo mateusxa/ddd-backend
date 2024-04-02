@@ -3,7 +3,7 @@ import uuid
 import pytest
 from random import randint
 from dotenv import load_dotenv
-from domain.entites.customer import Customer, CustomerId
+from domain.entites.customer import Customer
 from domain.services.admin_service import AdminService
 from domain.services.company_service import CompanyService
 from domain.services.customer_service import CustomerService
@@ -68,7 +68,7 @@ def test_get_token_by_email_and_password_and_get_id_by_token():
     assert token
 
     customer_id, company_id = CustomerService.get_id_and_company_id_by_token(token)
-    got_customer = customer_service.get_by_id(CustomerId(customer_id))
+    got_customer = customer_service.get_by_id(customer_id)
 
     assert got_customer.name == name
     assert got_customer.company_id == company_id
@@ -137,7 +137,7 @@ def test_create_with_token():
         password=password,
     )
 
-    assert customer.company_id == company.id.value
+    assert customer.company_id == company.id
     assert customer.name == name
     assert customer.email == email
     assert customer.hashed_password != password

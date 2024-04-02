@@ -1,34 +1,33 @@
-
-
-from datetime import datetime, timezone
-
-
-class EntityId:
-    value: str
-
-
-    def __init__(self, value: str | None):
-        self.value = value or ""
-
-    
-    def __str__(self):
-        return self.value
-    
-
-    def get_class_name(self):
-        return _get_plural_name(self.__class__.__name__.lower()[:-2])
+import os
+import hashlib
+from datetime import datetime
 
 
 class Entity:
-    id: EntityId
+
+    id: str | None
+    created: datetime
     
+
     def to_dict(self):
         return vars(self)
     
+
+class UserEntity(Entity):
+
+    hashed_password: str | None
+
     
-    def get_class_name(self):
-        return _get_plural_name(self.__class__.__name__.lower())
-
-
-def _get_plural_name(name: str):
-    return name + "s" if name[-1] != "y" else name[:-1] + "ies"
+    def is_password_valid(self, password: str):
+        if self.hash_password(password) ==  self.hashed_password:
+            self.verified = True
+            return True
+        return False
+    
+    
+    @staticmethod
+    def hash_password(password: str) -> str:
+        salted_password = f"{password}:{os.environ['PASSWORD_JWT_SECRET']}".encode('utf-8')
+        hash_algorithm = hashlib.sha256()
+        hash_algorithm.update(salted_password)        
+        return hash_algorithm.hexdigest()

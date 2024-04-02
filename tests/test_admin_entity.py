@@ -1,13 +1,5 @@
 import pytest
-from domain.entites.admin import Admin, AdminId
-
-
-def test_admin_id():
-    id = "fake_id"
-    admin_id = AdminId(id)
-
-    assert admin_id.value == id
-    assert str(admin_id) == id
+from domain.entites.admin import Admin
 
 
 def test_repr():
