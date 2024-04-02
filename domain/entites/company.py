@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from domain.entites.entity import Entity
+from domain.entites import Entity
 
 
 class Company(Entity):
