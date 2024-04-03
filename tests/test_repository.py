@@ -7,7 +7,7 @@ repository = Repository()
 
 def test_save_and_get_by_id():
     entity = TestRepository("unit_test")
-    created_entity = TestRepository.from_dict(repository.save("repositories", entity.to_dict()))
+    created_entity = TestRepository.from_dict(repository.add("repositories", entity.to_dict()))
 
     created_id = created_entity.id
     assert created_id
@@ -25,7 +25,7 @@ def test_save_and_get_by_id():
 
 def test_get_all():
     entity = TestRepository("unit_test")
-    created_entity = TestRepository.from_dict(repository.save("repositories", entity.to_dict()))
+    created_entity = TestRepository.from_dict(repository.add("repositories", entity.to_dict()))
 
     created_id = created_entity.id
     assert created_id
@@ -41,7 +41,7 @@ def test_get_all():
 def test_update():
     created_name = "unit_test"
     entity = TestRepository.from_dict(
-        repository.save(
+        repository.add(
             "repositories", 
             TestRepository(created_name).to_dict()
         )
@@ -62,7 +62,7 @@ def test_update():
 
 def test_save_and_delete():
     entity = TestRepository("unit_test")
-    created_entity = TestRepository.from_dict(repository.save("repositories", entity.to_dict()))
+    created_entity = TestRepository.from_dict(repository.add("repositories", entity.to_dict()))
 
     created_id = created_entity.id
     assert created_id

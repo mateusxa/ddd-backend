@@ -1,9 +1,10 @@
+from uuid import uuid4
 import pytest
 from domain.entites.company import Company
 
 
 def test_repr():
-    name = "TestCompany"
+    name = f"name{str(uuid4())}"
     tax_id = "31.899.356/0001-32"
 
     company = Company(name, tax_id)
@@ -19,7 +20,7 @@ def test_repr():
 
 
 def test_to_dict():
-    name = "TestCompany"
+    name = f"name{str(uuid4())}"
     tax_id = "31.899.356/0001-32"
     
     company_dict = Company(name, tax_id).to_dict()
@@ -31,7 +32,7 @@ def test_to_dict():
 
 
 def test_from_dict():
-    name = "TestCompany"
+    name = f"name{str(uuid4())}"
     tax_id = "31.899.356/0001-32"
     
     company = Company(name, tax_id)
@@ -52,7 +53,7 @@ def test_from_dict():
 
 
 def test_from_dict_fail():
-    name = "TestCompany"
+    name = f"name{str(uuid4())}"
     tax_id = "31.899.356/0001-32"
     
     company = Company(name, tax_id)

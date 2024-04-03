@@ -1,11 +1,15 @@
+from uuid import uuid4
+
+import pytest
 from domain.entites.company import Company
 from domain.services.company_service import CompanyService
 from domain.services.company_service import CompanyService
+from tests.utils.cpf_cnpj_generator import generate_cnpj
 
 
 def test_create_and_get_company():
-    name = "TestCompany"
-    tax_id = "31.899.356/0001-32"
+    name = f"name{str(uuid4())}"
+    tax_id = generate_cnpj()
 
     company = Company(
         name = name,
@@ -24,9 +28,23 @@ def test_create_and_get_company():
     assert got_company.tax_id == tax_id
 
 
-def test_create_and_get_company_by_name():
+def test_create_and_get_company_fail():
     name = "TestCompany"
     tax_id = "31.899.356/0001-32"
+
+    company = Company(
+        name = name,
+        tax_id = tax_id,
+    )
+    company_service = CompanyService()
+
+    with pytest.raises(Exception):
+        company_service.create(company)
+
+
+def test_create_and_get_company_by_name():
+    name = f"name{str(uuid4())}"
+    tax_id = generate_cnpj()
 
     company = Company(
         name = name,
@@ -39,10 +57,10 @@ def test_create_and_get_company_by_name():
     assert company.name == name
     assert company.tax_id == tax_id
 
-    got_companies = company_service.get_by_name(name=name)
+    got_company = company_service.get_by_name(name=name)
 
-    for got_company in got_companies:
-        assert got_company.name == name
+    assert got_company
+    assert got_company.name == name
 
 
 def test_page_company():
@@ -50,8 +68,8 @@ def test_page_company():
 
     for _ in range(6):
         company_service.create(Company(
-            name = "TestCompany",
-            tax_id = "31.899.356/0001-32",
+            name = f"name{str(uuid4())}",
+            tax_id = generate_cnpj(),
         ))
 
     cursor = None

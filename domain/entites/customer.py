@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from domain.entites import UserEntity
+from utils.error import DictIncomplete
 
 
 
@@ -38,7 +39,7 @@ class Customer(UserEntity):
     @staticmethod
     def from_dict(source: dict):
         if not all(attr in source for attr in Customer.__annotations__):
-            raise Exception(f"dict incomplete! {source}")
+            raise DictIncomplete(source)
         return Customer(
             id = source["id"],
             company_id = source["company_id"],

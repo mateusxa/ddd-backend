@@ -1,10 +1,11 @@
 import pytest
+from uuid import uuid4
 from domain.entites.admin import Admin
 
 
 def test_repr():
-    name = "name"
-    email = "email"
+    name = str(uuid4())
+    email = str(uuid4())
     password = "password"
 
     admin = Admin(name, email, password=password)

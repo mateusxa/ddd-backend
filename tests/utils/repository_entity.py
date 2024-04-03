@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from domain.entites import Entity
+from utils.error import DictIncomplete
 
 
 class TestRepository(Entity):
@@ -18,7 +19,7 @@ class TestRepository(Entity):
     @staticmethod
     def from_dict(source: dict):
         if not all(attr in source for attr in TestRepository.__annotations__):
-            raise Exception(f"dict incomplete! {source}")
+            raise DictIncomplete(source)
         return TestRepository(
             id = str(source["id"]),
             name = source["name"],

@@ -5,6 +5,7 @@ from domain.entites.admin import Admin
 from infrastructure.email.email import EmailService
 from domain.services.company_service import CompanyService
 from domain.repositories.admin_repository import AdminRepository
+from utils.error import DuplicatedAttribute, DuplicatedEntities, InvalidAttribute, ObjectNotFound
 
 
 class AdminService:
@@ -17,7 +18,10 @@ class AdminService:
 
 
     def create(self, admin: Admin) -> Admin:
-        admin_dict = self.repository.save(admin.to_dict())
+        if self.get_by_email(admin.email):
+            raise DuplicatedAttribute(f"Admin email {admin.email} already exists!")
+        
+        admin_dict = self.repository.add(admin.to_dict())
         return Admin.from_dict(admin_dict)
     
 
@@ -34,12 +38,15 @@ class AdminService:
         admin_dict = self.repository.get_by_id(admin_id)
         if admin_dict:
             return Admin.from_dict(admin_dict)
-        raise Exception(f"No admins with {admin_id}")
+        raise ObjectNotFound(f"No admins with {admin_id}")
     
 
-    def get_by_email(self, email: str):
+    def get_by_email(self, email: str) -> Admin | None:
         admin_list = [Admin.from_dict(admin_dict) for admin_dict in self.repository.get_by_fields(email=email)]
-        return admin_list[0]
+        if len(admin_list) > 1:
+            raise DuplicatedEntities(f"More than 1 Admin with same email: {email}")
+        
+        return admin_list[0] if len(admin_list) > 0 else None
     
 
     def page(self, cursor: str | None = None, limit: int | None = None):
@@ -50,9 +57,9 @@ class AdminService:
     def get_token_by_email_and_password(self, email: str, password: str) -> str:
         admin = self.get_by_email(email)
         if not admin or not admin.id:
-            raise Exception("Invalid email!")
+            raise InvalidAttribute("Invalid email!")
         if not admin.is_password_valid(password):
-            raise Exception("Invalid password!")
+            raise InvalidAttribute("Invalid password!")
         token = jwt.encode({
             "id": admin.id
         }, environ['ADMIN_JWT_SECRET'])

@@ -1,6 +1,7 @@
 import os
 import uuid
 import pytest
+from uuid import uuid4
 from random import randint
 from dotenv import load_dotenv
 from domain.entites.customer import Customer
@@ -13,8 +14,8 @@ load_dotenv()
 
 
 def test_create_customer():
-    name = "name"
-    email = "email"
+    name = f"name{str(uuid4())}"
+    email = f"email{str(uuid4())}"
     password = "password"
     company_id = str(uuid.uuid4())
     
@@ -34,13 +35,32 @@ def test_create_customer():
     assert customer.hashed_password != password
 
 
+def test_create_customer_fail():
+    name = "name"
+    email = "email"
+    password = "password"
+    company_id = str(uuid.uuid4())
+    
+    customer_service = CustomerService()
+
+    with pytest.raises(Exception):
+        customer_service.create(
+            Customer(
+                company_id = company_id,
+                name = name,
+                email = email,
+                password = password,
+            )
+        )
+
+
 def test_create_and_update_customer():
     company_id = str(uuid.uuid4())
     customer_service = CustomerService()
     customer = customer_service.create(Customer(
         company_id=company_id,
-        name="name",
-        email="email",
+        name = f"name{str(uuid4())}",
+        email = f"email{str(uuid4())}",
         password="password",
     ))
 
@@ -51,8 +71,8 @@ def test_create_and_update_customer():
     assert new_customer.is_password_valid(new_password)
 
 def test_get_token_by_email_and_password_and_get_id_by_token():
-    name = "name"
-    email = "email"
+    name = f"name{str(uuid4())}"
+    email = f"email{str(uuid4())}"
     password = "password"
     company_id = str(uuid.uuid4())
     
@@ -76,8 +96,8 @@ def test_get_token_by_email_and_password_and_get_id_by_token():
 
 
 def test_fail_get_token_by_email_and_password():
-    name = "name"
-    email = "email"
+    name = f"name{str(uuid4())}"
+    email = f"email{str(uuid4())}"
     company_id = str(uuid.uuid4())
     
     customer_service = CustomerService()
@@ -99,8 +119,8 @@ def test_page_customer():
     for _ in range(6):
         customer_service.create(Customer(
             company_id=company_id,
-            name=name,
-            email="email",
+            name = name,
+            email = f"email{str(uuid4())}",
             password="password",
         ))
 
@@ -120,14 +140,15 @@ def test_page_customer():
             
 def test_create_with_token():
     company_service = CompanyService()
-    company = company_service.get_by_name("TestCompany")[0]
+    company = company_service.get_by_name("TestCompany")
+    assert company
     assert company.id
     admin_service = AdminService()
     token = admin_service.invite_customer(os.environ["TARGET_EMAIL"], company_id=company.id)
 
 
-    name = "name"
-    email = "email"
+    name = f"name{str(uuid4())}"
+    email = f"email{str(uuid4())}"
     password = "password"
     custome_service = CustomerService()
     customer = custome_service.create_with_token(

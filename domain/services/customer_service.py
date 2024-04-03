@@ -3,6 +3,7 @@ from os import environ
 from datetime import datetime, timezone
 from domain.entites.customer import Customer
 from domain.repositories.customer_repository import CustomerRepository
+from utils.error import DuplicatedAttribute, DuplicatedEntities, InvalidAttribute, ObjectNotFound, TokenExpired
 
 
 class CustomerService:
@@ -15,7 +16,9 @@ class CustomerService:
 
 
     def create(self, customer: Customer) -> Customer:
-        customer_dict = self.repository.save(customer.to_dict())
+        if self.get_by_email(customer.email):
+            raise DuplicatedAttribute(f"Customer name {customer.name} already exists!")
+        customer_dict = self.repository.add(customer.to_dict())
         return Customer.from_dict(customer_dict)
     
 
@@ -23,7 +26,7 @@ class CustomerService:
         decoded_payload = jwt.decode(token, environ["INVITE_JWT_SECRET"], algorithms=['HS256'])
 
         if datetime.now(timezone.utc).timestamp() > float(decoded_payload["expires_after"]):
-            raise Exception("Token expired!")
+            raise TokenExpired(f"Token expiration: {decoded_payload['expires_after']}")
         
         return self.create(
             Customer(
@@ -48,20 +51,23 @@ class CustomerService:
         customer_dict = self.repository.get_by_id(customer_id)
         if customer_dict:
             return Customer.from_dict(customer_dict)
-        raise Exception(f"No customers with {customer_id}")
+        raise ObjectNotFound(f"No customers with {customer_id}")
     
 
-    def get_by_email(self, email: str):
+    def get_by_email(self, email: str) -> Customer | None:
         customer_list = [Customer.from_dict(customer_dict) for customer_dict in self.repository.get_by_fields(email=email)]
-        return customer_list[0]
+        if len(customer_list) > 1:
+            raise DuplicatedEntities(f"More than 1 Customer with same email: {email}")
+        
+        return customer_list[0] if len(customer_list) > 0 else None
 
 
     def get_token_by_email_and_password(self, email: str, password: str) -> str:
         customer = self.get_by_email(email)
         if not customer or not customer.id:
-            raise Exception("Invalid email!")
+            raise InvalidAttribute("Invalid email!")
         if not customer.is_password_valid(password):
-            raise Exception("Invalid password!")
+            raise InvalidAttribute("Invalid password!")
         token = jwt.encode({
             "id": customer.id,
             "companyId": customer.company_id,

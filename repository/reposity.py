@@ -1,8 +1,9 @@
-from logging import warning
 from uuid import uuid4
+from logging import warning
 from datetime import datetime
 from base64 import b64decode, b64encode
 from infrastructure.firebase.firestore import Firestore
+from utils.error import DuplicatedAttribute
 
 
 class Repository:
@@ -49,15 +50,16 @@ class Repository:
 
         return new_cursor, data_list
 
+
     def get_all(self, repository: str) -> list[dict]:
         return self.conn.get_documents(repository)
 
 
-    def save(self, repository: str,  dict_data: dict) -> dict:
+    def add(self, repository: str,  dict_data: dict) -> dict:
         id = Repository.__generate_id()
 
         if self.conn.get_document_by_id(repository, id):
-            raise Exception(f"duplicates uuids {id}")
+            raise DuplicatedAttribute(f"duplicates uuids {id}")
         
         obj_dict = Repository.__remove_key(dict_data, "id")
 
@@ -76,6 +78,7 @@ class Repository:
             id = dict_data["id"],
             data = dict_data_without_id,
         )
+
 
     def delete(self, repository: str, obj_id: str) -> None:
         self.conn.delete_document(repository, obj_id)

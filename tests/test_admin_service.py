@@ -1,3 +1,4 @@
+from uuid import uuid4
 import pytest
 from random import randint
 from dotenv import load_dotenv
@@ -9,8 +10,8 @@ load_dotenv()
 
 
 def test_create_and_get_admin():
-    name = "name"
-    email = "email"
+    name = f"name{str(uuid4())}"
+    email = f"email{str(uuid4())}"
 
     admin_service = AdminService()
     created_admin = admin_service.create(Admin(
@@ -26,12 +27,25 @@ def test_create_and_get_admin():
     assert got_company.email == email
 
 
+def test_create_fail():
+    name = "name"
+    email = "email"
+
+    admin_service = AdminService()
+    with pytest.raises(Exception):
+        admin_service.create(Admin(
+            name=name,
+            email=email,
+            password="password",
+        ))
+
+
 def test_create_and_update_admin():
     admin_service = AdminService()
     admin = admin_service.create(Admin(
-        name="name",
-        email="email",
-        password="password",
+        name = f"name{str(uuid4())}",
+        email = f"email{str(uuid4())}",
+        password = "password",
     ))
 
     assert admin.id
@@ -40,9 +54,10 @@ def test_create_and_update_admin():
 
     assert new_admin.is_password_valid(new_password)
 
+
 def test_get_token_by_email_and_password_and_get_id_by_token():
-    name = "name"
-    email = "email"
+    name = f"name{str(uuid4())}"
+    email = f"email{str(uuid4())}"
     password = "password"
     
     admin_service = AdminService()
@@ -63,8 +78,8 @@ def test_get_token_by_email_and_password_and_get_id_by_token():
 
 
 def test_fail_get_token_by_email_and_password():
-    name = "name"
-    email = "email"
+    name = f"name{str(uuid4())}"
+    email = f"email{str(uuid4())}"
     
     admin_service = AdminService()
     admin = admin_service.create(Admin(
@@ -84,7 +99,7 @@ def test_page_admin():
     for _ in range(6):
         admin_service.create(Admin(
             name=name,
-            email="email",
+            email = f"email{str(uuid4())}",
             password="password",
         ))
 

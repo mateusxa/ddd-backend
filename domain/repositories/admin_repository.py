@@ -1,4 +1,5 @@
 from datetime import datetime
+from domain.entites.admin import Admin
 from repository.reposity import Repository
 
 
@@ -8,14 +9,13 @@ class AdminRepository:
     repository: Repository
 
 
-
     def __init__(self):
         self.name = "admins"
         self.repository = Repository()
 
 
-    def save(self, admin_dict: dict) -> dict:
-        return self.repository.save(self.name, admin_dict)
+    def add(self, admin_dict: dict) -> dict:
+        return self.repository.add(self.name, admin_dict)
         
 
     def get_by_id(self, admin_id: str):

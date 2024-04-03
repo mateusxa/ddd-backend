@@ -3,6 +3,7 @@ from typing import Any, Dict, List
 from firebase_admin import firestore
 from google.cloud.firestore_v1.base_query import FieldFilter
 from infrastructure.firebase import Firebase
+from utils.error import DefaultError
 
 
 class Firestore(Firebase):
@@ -20,7 +21,7 @@ class Firestore(Firebase):
         ref.update(data)
         updated_data = self.get_document_by_id(collection=collection, id=id)
         if not updated_data:
-            raise Exception(f"Document updated but could not found! {collection}/{id}")
+            raise DefaultError(f"Document updated but could not be found! {collection}/{id}")
         return updated_data
 
     def get_document_by_id(self, collection: str, id: str) -> dict | None:

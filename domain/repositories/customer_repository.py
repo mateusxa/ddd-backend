@@ -14,8 +14,8 @@ class CustomerRepository:
         self.repository = Repository()
 
 
-    def save(self, admin_dict: dict) -> dict:
-        return self.repository.save(self.name, admin_dict)
+    def add(self, admin_dict: dict) -> dict:
+        return self.repository.add(self.name, admin_dict)
         
 
     def get_by_id(self, admin_id: str):

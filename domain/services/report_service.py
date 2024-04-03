@@ -1,6 +1,7 @@
 from infrastructure.storage.storage import Storage
 from domain.entites.report import Report
 from domain.repositories.report_repository import ReportRepository
+from utils.error import InvalidAttribute, ObjectNotFound
 
 
 class ReportService:
@@ -13,14 +14,14 @@ class ReportService:
 
 
     def create(self, report: Report, local_path) -> Report:
-        report_dict = self.repository.save(report.to_dict())
+        report_dict = self.repository.add(report.to_dict())
         report = Report.from_dict(report_dict)
 
         if not report.id:
-            raise Exception(f"Cannot save an report file with None id: {report}")
+            raise ObjectNotFound(f"Cannot save an report file with None id: {report}")
         
         if not local_path:
-            raise Exception(f"Cannot save an report file without a file(path/to/file): {report}")
+            raise InvalidAttribute(f"Cannot save an report file without a file(path/to/file): {report}")
 
         report = report.set(
             bucket_url=Storage.upload_file_to_folder(
@@ -44,7 +45,7 @@ class ReportService:
         report_dict = self.repository.get_by_id(report_id)
         if report_dict:
             return Report.from_dict(report_dict)
-        raise Exception(f"No reports with {report_id}")
+        raise ObjectNotFound(f"No reports with {report_id}")
     
 
     def page(self, cursor: str | None = None, limit: int | None = None, company_id: str | None = None):
