@@ -32,7 +32,7 @@ def test_to_dict():
         email = email,
         password = password,
     ).to_dict()
-
+    
     assert "name" in admin_dict
     assert "email" in admin_dict
     assert "hashed_password" in admin_dict

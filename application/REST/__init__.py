@@ -2,9 +2,10 @@ import os
 import jwt
 from functools import wraps
 from flask import request, jsonify
-
 from domain.services.admin_service import AdminService
 from domain.services.customer_service import CustomerService
+from utils.error import Error
+from main import app
 
 def admin_token_required(f):
     @wraps(f)
@@ -42,3 +43,8 @@ def customer_token_required(f):
         return f(*args, **kwargs)
 
     return decorated
+
+
+@app.errorhandler(Error)
+def invalid_api_usage(e: Error):
+    return jsonify(e.to_dict()), e.status_code

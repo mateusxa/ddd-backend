@@ -23,6 +23,7 @@ def test_create_and_get_admin():
     assert created_admin.id
     got_company = admin_service.get_by_id(created_admin.id)
 
+    assert got_company
     assert got_company.name == name
     assert got_company.email == email
 
@@ -73,6 +74,7 @@ def test_get_token_by_email_and_password_and_get_id_by_token():
     admin_id = AdminService.get_id_by_token(token)
     got_company = admin_service.get_by_id(admin_id)
 
+    assert got_company
     assert got_company.name == name
     assert got_company.email == email
 

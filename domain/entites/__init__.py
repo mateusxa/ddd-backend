@@ -1,33 +1,24 @@
-import os
-import hashlib
+from abc import ABC, abstractmethod
 from datetime import datetime
 
 
-class Entity:
+class Entity(ABC):
 
-    id: str | None
-    created: datetime
-    
+    @property
+    @abstractmethod
+    def id(self) -> str | None:
+        pass
+
+    @property
+    @abstractmethod
+    def created(self) -> datetime | None:
+        pass
 
     def to_dict(self):
-        return vars(self)
-    
-
-class UserEntity(Entity):
-
-    hashed_password: str | None
-
-    
-    def is_password_valid(self, password: str):
-        if self.hash_password(password) ==  self.hashed_password:
-            self.verified = True
-            return True
-        return False
-    
+        dict_data = vars(self)
+        return {key.lstrip('_'): value for key, value in dict_data.items()}
     
     @staticmethod
-    def hash_password(password: str) -> str:
-        salted_password = f"{password}:{os.environ['PASSWORD_JWT_SECRET']}".encode('utf-8')
-        hash_algorithm = hashlib.sha256()
-        hash_algorithm.update(salted_password)        
-        return hash_algorithm.hexdigest()
+    @abstractmethod
+    def from_dict(entity_dict: dict):
+        pass

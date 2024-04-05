@@ -1,8 +1,9 @@
-from logging import warning
+from logging import error
 from flask import Blueprint, jsonify, request
 from application.REST import admin_token_required
 from domain.entites.admin import Admin
 from domain.services.admin_service import AdminService
+from utils.error import Error
 
 
 admins_blueprint = Blueprint('admins', __name__)
@@ -14,6 +15,7 @@ admin_service = AdminService()
 def get_admins(admin_id_token):
     cursor = request.args.get('cursor')
     limit = request.args.get('limit')
+
     limit = int(limit) if limit else None
     new_cursor, admins = admin_service.page(cursor=cursor, limit=limit)
     return jsonify({
@@ -27,28 +29,38 @@ def get_admins(admin_id_token):
 def get_admin(admin_id_token, admin_id):
     admin = admin_service.get_by_id(admin_id)
     if not admin:
-        return jsonify({'error': 'Admin not found'}), 404
+        raise Error(Error.Code.object_not_found, f"No admin with id: {admin_id}!", 400)
     return jsonify(admin.to_dict())
 
 
 @admins_blueprint.route('/admins', methods=['POST'])
 @admin_token_required
 def create_admin(admin_id_token):
-    data = request.json
+    # TODO jogar no middleware
+    data: dict | None = request.json
+
+    required_attributes = ["name", "email", "password"]
     if not data:
-        return jsonify({'error': 'Invalid json'}), 404  
+        raise Error(
+            code = Error.Code.missing_attributes, 
+            message = Error.Message.missing_attributes.format(attributes=required_attributes),
+            status_code = 400
+        )
     
-    if not data.get('name'):
-        return jsonify({'error': 'name not found!'}), 404
-    name = data.get("name")
+    attributes_in_json = [field for field in data.keys()] 
+    missing_attributes_in_json = [item for item in required_attributes if item not in attributes_in_json]    
 
-    if not data.get('email'):
-        return jsonify({'error': 'email not found!'}), 404
-    email = data.get('email')
+    if len(missing_attributes_in_json) < 0:
+        raise Error(
+            code = Error.Code.missing_attributes, 
+            message = Error.Message.missing_attributes.format(attributes=missing_attributes_in_json),
+            status_code = 400
+        )
+    ### 
 
-    if not data.get('password'):
-        return jsonify({'error': 'password not found!'}), 404
-    password = data.get('password')
+    name = data["name"]
+    email = data["email"]
+    password = data["password"]
 
     admin = admin_service.create(
         Admin(
@@ -57,24 +69,37 @@ def create_admin(admin_id_token):
             password=password,
         )
     )
+
     return jsonify(admin.to_dict()), 201
 
 
 @admins_blueprint.route('/admins/token', methods=['POST'])
 def create_admin_token():
-    data = request.json
+    data: dict | None = request.json
+
+    required_attributes = ["name", "password"]
     if not data:
-        return jsonify({'error': 'Invalid json'}), 404  
+        raise Error(
+            code = Error.Code.missing_attributes, 
+            message = Error.Message.missing_attributes.format(attributes=required_attributes),
+            status_code = 400
+        )
+    
+    attributes_in_json = [field for field in data.keys()] 
+    missing_attributes_in_json = [item for item in required_attributes if item not in attributes_in_json]    
 
-    if not data.get('email'):
-        return jsonify({'error': 'email not found!'}), 404
-    email = data.get('email')
-
-    if not data.get('password'):
-        return jsonify({'error': 'password not found!'}), 404
-    password = data.get('password')
+    if len(missing_attributes_in_json) < 0:
+        raise Error(
+            code = Error.Code.missing_attributes, 
+            message = Error.Message.missing_attributes.format(attributes=missing_attributes_in_json),
+            status_code = 400
+        )
+    
+    email = data["email"]
+    password = data["password"]
 
     token = admin_service.get_token_by_email_and_password(email=email, password=password)
+
     return jsonify({
         "token": token
     }), 201

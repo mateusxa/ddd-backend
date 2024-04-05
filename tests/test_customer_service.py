@@ -90,6 +90,7 @@ def test_get_token_by_email_and_password_and_get_id_by_token():
     customer_id, company_id = CustomerService.get_id_and_company_id_by_token(token)
     got_customer = customer_service.get_by_id(customer_id)
 
+    assert got_customer
     assert got_customer.name == name
     assert got_customer.company_id == company_id
     assert got_customer.email == email

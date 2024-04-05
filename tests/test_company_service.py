@@ -24,6 +24,7 @@ def test_create_and_get_company():
 
     got_company = company_service.get_by_id(company.id)
 
+    assert got_company
     assert got_company.name == name
     assert got_company.tax_id == tax_id
 

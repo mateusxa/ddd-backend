@@ -1,17 +1,16 @@
 import jwt
 from os import environ
 from datetime import datetime, timedelta, timezone
-from domain.entites.admin import Admin
 from infrastructure.email.email import EmailService
+from domain.entites.admin import Admin
 from domain.services.company_service import CompanyService
 from domain.repositories.admin_repository import AdminRepository
-from utils.error import DuplicatedAttribute, DuplicatedEntities, InvalidAttribute, ObjectNotFound
+from utils.error import Error
 
 
 class AdminService:
 
     repository: AdminRepository
-
 
     def __init__(self):
         self.repository = AdminRepository()
@@ -19,47 +18,44 @@ class AdminService:
 
     def create(self, admin: Admin) -> Admin:
         if self.get_by_email(admin.email):
-            raise DuplicatedAttribute(f"Admin email {admin.email} already exists!")
-        
-        admin_dict = self.repository.add(admin.to_dict())
-        return Admin.from_dict(admin_dict)
-    
-
-    def delete(self, admin_id: str) -> None:
-        return self.repository.delete(admin_id)
+            raise Error(Error.Code.invalid_attribute, f"Admin email already exists!", 400)
+        return self.repository.create(admin)
     
 
     def update(self, admin_id: str, password: str | None = None) -> Admin:
         admin = self.get_by_id(admin_id)
-        return admin.set(password)
+        if not admin:
+            raise Error(Error.Code.object_not_found, f"No admin with id: {admin_id}!", 400)
+        if password:
+            admin.hashed_password = password
+        return self.repository.update(admin)
     
+    
+    def delete(self, admin_id: str) -> None:
+        return self.repository.delete(admin_id)
 
-    def get_by_id(self, admin_id: str):
-        admin_dict = self.repository.get_by_id(admin_id)
-        if admin_dict:
-            return Admin.from_dict(admin_dict)
-        raise ObjectNotFound(f"No admins with {admin_id}")
+
+    def get_by_id(self, admin_id: str) -> Admin | None:
+        return self.repository.get_by_id(admin_id)
     
 
     def get_by_email(self, email: str) -> Admin | None:
-        admin_list = [Admin.from_dict(admin_dict) for admin_dict in self.repository.get_by_fields(email=email)]
+        admin_list = self.repository.get_by_fields(email=email)
         if len(admin_list) > 1:
-            raise DuplicatedEntities(f"More than 1 Admin with same email: {email}")
-        
+            raise Error(Error.Code.internal_error, f"More than 1 Admin with same email: {email}", 500)
         return admin_list[0] if len(admin_list) > 0 else None
     
 
     def page(self, cursor: str | None = None, limit: int | None = None):
-        new_cursor, admins_dict = self.repository.page(cursor=cursor, limit=limit)
-        return new_cursor, [Admin.from_dict(admin) for admin in admins_dict if admin] if admins_dict else []
+        return self.repository.page(cursor=cursor, limit=limit)
     
 
     def get_token_by_email_and_password(self, email: str, password: str) -> str:
         admin = self.get_by_email(email)
         if not admin or not admin.id:
-            raise InvalidAttribute("Invalid email!")
+            raise Error(Error.Code.invalid_attribute, f"Invalid email!", 400)
         if not admin.is_password_valid(password):
-            raise InvalidAttribute("Invalid password!")
+            raise Error(Error.Code.invalid_attribute, f"Invalid password!", 400)
         token = jwt.encode({
             "id": admin.id
         }, environ['ADMIN_JWT_SECRET'])
@@ -74,6 +70,8 @@ class AdminService:
 
     def invite_customer(self, customer_email: str, company_id: str):
         company = CompanyService().get_by_id(company_id)
+        if not company:
+            raise Error(Error.Code.object_not_found, f"No company with id: {company_id}!", 400)
         data = {
             'company_id': company_id,
             'expires_after': (datetime.now(timezone.utc) + timedelta(days=1)).timestamp(),

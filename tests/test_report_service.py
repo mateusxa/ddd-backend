@@ -1,5 +1,4 @@
 import uuid
-import pytest
 from random import randint
 from domain.entites.report import Report
 from domain.services.report_service import ReportService
@@ -23,15 +22,10 @@ def test_create_and_get_report():
 
     got_report = report_service.get_by_id(report.id)
 
+    assert got_report
     assert got_report.name == name
     assert got_report.company_id == company_id
 
-
-def test_get_report_fail():
-    report_service = ReportService()
-
-    with pytest.raises(Exception):
-        report_service.get_by_id("wrong_id")
 
 
 def test_delete_and_get_report():
@@ -52,8 +46,7 @@ def test_delete_and_get_report():
 
     assert deleted_report is None
 
-    with pytest.raises(Exception):
-        report_service.get_by_id(report.id)
+    assert report_service.get_by_id(report.id) is None
 
 
 def test_page_report():

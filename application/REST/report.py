@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 from application.REST import admin_token_required, customer_token_required
 from domain.entites.report import Report
 from domain.services.report_service import ReportService
+from utils.error import Error
 
 
 reports_blueprint = Blueprint('reports', __name__)
@@ -11,9 +12,13 @@ report_service = ReportService()
 @reports_blueprint.route('/reports', methods=['GET'])
 @customer_token_required
 def get_reports():
-    cursor, reports = report_service.page()
+    cursor = request.args.get('cursor')
+    limit = request.args.get('limit')
+
+    limit = int(limit) if limit else None
+    new_cursor, reports = report_service.page(cursor=cursor, limit=limit)
     return jsonify({
-        "cursor": cursor,
+        "cursor": new_cursor,
         "reports": [report.to_dict() for report in reports]
     })
 
@@ -23,24 +28,37 @@ def get_reports():
 def get_report(report_id):
     report = report_service.get_by_id(report_id)
     if not report:
-        return jsonify({'error': 'Report not found'}), 404
+        raise Error(Error.Code.object_not_found, f"No report with id: {report_id}!", 400)
     return jsonify(report.to_dict())
 
 
 @reports_blueprint.route('/reports', methods=['POST'])
 @admin_token_required
 def create_report():
-    data = request.json
-    if not data:
-        return jsonify({'error': 'Invalid json'}), 404  
-    
-    if not data.get('name'):
-        return jsonify({'error': 'name not found!'}), 404
-    name = data.get("name")
+    # TODO jogar no middleware
+    data: dict | None = request.json
 
-    if not data.get('companyId'):
-        return jsonify({'error': 'companyId not found!'}), 404
-    company_id = data.get('companyId')
+    required_attributes = ["name", "company_id", "password"]
+    if not data:
+        raise Error(
+            code = Error.Code.missing_attributes, 
+            message = Error.Message.missing_attributes.format(attributes=required_attributes),
+            status_code = 400
+        )
+    
+    attributes_in_json = [field for field in data.keys()] 
+    missing_attributes_in_json = [item for item in required_attributes if item not in attributes_in_json]    
+
+    if len(missing_attributes_in_json) < 0:
+        raise Error(
+            code = Error.Code.missing_attributes, 
+            message = Error.Message.missing_attributes.format(attributes=missing_attributes_in_json),
+            status_code = 400
+        )
+    ### 
+
+    name = data["name"]
+    company_id = data["company_id"]
 
     #TODO upload de arquivo
     report = report_service.create(

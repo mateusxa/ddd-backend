@@ -1,47 +1,38 @@
-from datetime import datetime
+from domain.entites.report import Report
 from repository.reposity import Repository
+from infrastructure.firebase.firestore import Firestore
 
 
-class ReportRepository:
+class ReportRepository(Repository):
 
-    name: str
-    repository: Repository
-
-
+    entity_name: str
 
     def __init__(self):
-        self.name = "reports"
-        self.repository = Repository()
+        self.entity_name = "reports"
+        self.db = Firestore()
 
 
-    def add(self, admin_dict: dict) -> dict:
-        return self.repository.add(self.name, admin_dict)
+    def create(self, report: Report) -> Report:
+        return Report.from_dict(self.db.create(self.entity_name, report.to_dict()))
         
 
-    def get_by_id(self, admin_id: str):
-        return self.repository.get_by_id(self.name, admin_id)
+    def get_by_id(self, report_id: str) -> Report | None:
+        report_dict = self.db.get_by_id(self.entity_name, report_id)
+        return Report.from_dict(report_dict) if report_dict else None
 
 
-    def get_by_fields(
-        self, limit: int | None = None, created_before: datetime | None = None, 
-        created_after: datetime | None = None, **kwargs
-    ):
-        return self.repository.get_by_fields(
-            self.name, 
-            limit=limit,
-            created_before=created_before, 
-            created_after=created_after, 
-            **kwargs
-        )    
+    def get_by_fields(self, limit: int | None = None, **kwargs) -> list[Report]:
+        return [Report.from_dict(report_dict) for report_dict in self.db.get_by_fields(self.entity_name, limit=limit, **kwargs)]
 
         
-    def page(self, cursor: str | None = None, limit: int | None = None, **kwargs):
-        return self.repository.page(self.name, cursor=cursor, limit=limit, **kwargs)
-    
-
-    def update(self, dict_data: dict) -> dict:
-        return self.repository.update(self.name, dict_data)
+    def page(self, cursor: str | None = None, limit: int | None = None, **kwargs) -> tuple[str | None, list[Report]]:
+        new_cursor, report_list = self.db.page(self.entity_name, cursor=cursor, limit=limit, **kwargs)
+        return new_cursor, [Report.from_dict(report_dict) for report_dict in report_list]
 
 
-    def delete(self, obj_id: str) -> None:
-        self.repository.delete(self.name, obj_id)
+    def update(self, report: Report) -> Report:
+        return Report.from_dict(self.db.update(self.entity_name, report.to_dict()))
+
+
+    def delete(self, report_id: str) -> None:
+        return self.db.delete(self.entity_name, report_id)    

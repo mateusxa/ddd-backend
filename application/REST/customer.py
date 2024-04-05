@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 from application.REST import admin_token_required
 from domain.entites.customer import Customer
 from domain.services.customer_service import CustomerService
+from utils.error import Error
 
 
 customers_blueprint = Blueprint('customers', __name__)
@@ -11,9 +12,13 @@ customer_service = CustomerService()
 @customers_blueprint.route('/customers', methods=['GET'])
 @admin_token_required
 def get_customers():
-    cursor, customers = customer_service.page()
+    cursor = request.args.get('cursor')
+    limit = request.args.get('limit')
+
+    limit = int(limit) if limit else None
+    new_cursor, customers = customer_service.page(cursor=cursor, limit=limit)
     return jsonify({
-        "cursor": cursor,
+        "cursor": new_cursor,
         "customers": [customer.to_dict() for customer in customers]
     })
 
@@ -23,32 +28,37 @@ def get_customers():
 def get_customer(customer_id):
     customer = customer_service.get_by_id(customer_id)
     if not customer:
-        return jsonify({'error': 'Customer not found'}), 404
+        raise Error(Error.Code.object_not_found, f"No customer with id: {customer_id}!", 400)
     return jsonify(customer.to_dict())
 
 
 @customers_blueprint.route('/customers', methods=['POST'])
 @admin_token_required
 def create_customer():
-    data = request.json
+    data: dict | None = request.json
+
+    required_attributes = ["company_id", "name", "email", "password"]
     if not data:
-        return jsonify({'error': 'Invalid json'}), 404  
+        raise Error(
+            code = Error.Code.missing_attributes, 
+            message = Error.Message.missing_attributes.format(attributes=required_attributes),
+            status_code = 400
+        )
     
-    if not data.get('companyId'):
-        return jsonify({'error': 'companyId not found!'}), 404
-    company_id = data.get("companyId")
-    
-    if not data.get('name'):
-        return jsonify({'error': 'name not found!'}), 404
-    name = data.get("name")
+    attributes_in_json = [field for field in data.keys()] 
+    missing_attributes_in_json = [item for item in required_attributes if item not in attributes_in_json]    
 
-    if not data.get('email'):
-        return jsonify({'error': 'email not found!'}), 404
-    email = data.get('email')
-
-    if not data.get('password'):
-        return jsonify({'error': 'password not found!'}), 404
-    password = data.get('password')
+    if len(missing_attributes_in_json) < 0:
+        raise Error(
+            code = Error.Code.missing_attributes, 
+            message = Error.Message.missing_attributes.format(attributes=missing_attributes_in_json),
+            status_code = 400
+        )
+    ### 
+    company_id = data["company_id"]
+    name = data["name"]
+    email = data["email"]
+    password = data["password"]
 
     customer = customer_service.create(
         Customer(
@@ -60,19 +70,33 @@ def create_customer():
     )
     return jsonify(customer.to_dict()), 201
 
+
 @customers_blueprint.route('/customers/token', methods=['POST'])
 def create_customer_token():
-    data = request.json
+    # TODO jogar no middleware
+    data: dict | None = request.json
+
+    required_attributes = ["email", "password"]
     if not data:
-        return jsonify({'error': 'Invalid json'}), 404  
+        raise Error(
+            code = Error.Code.missing_attributes, 
+            message = Error.Message.missing_attributes.format(attributes=required_attributes),
+            status_code = 400
+        )
+    
+    attributes_in_json = [field for field in data.keys()] 
+    missing_attributes_in_json = [item for item in required_attributes if item not in attributes_in_json]    
 
-    if not data.get('email'):
-        return jsonify({'error': 'email not found!'}), 404
-    email = data.get('email')
+    if len(missing_attributes_in_json) < 0:
+        raise Error(
+            code = Error.Code.missing_attributes, 
+            message = Error.Message.missing_attributes.format(attributes=missing_attributes_in_json),
+            status_code = 400
+        )
+    ### 
 
-    if not data.get('password'):
-        return jsonify({'error': 'password not found!'}), 404
-    password = data.get('password')
+    email = data["email"]
+    password = data["password"]
 
     token = customer_service.get_token_by_email_and_password(email=email, password=password)
     return jsonify({
