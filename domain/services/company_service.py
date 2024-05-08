@@ -1,7 +1,7 @@
+from infrastructure.repository.company_repository import CompanyRepository
 from utils.error import Error
 from utils.validateCNPJ import validate_cnpj
 from domain.entites.company import Company
-from domain.repositories.company_repository import CompanyRepository
 
 
 class CompanyService:

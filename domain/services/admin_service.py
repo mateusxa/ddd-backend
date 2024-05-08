@@ -1,10 +1,10 @@
 import jwt
 from os import environ
 from datetime import datetime, timedelta, timezone
-from infrastructure.email.email import EmailService
 from domain.entites.admin import Admin
 from domain.services.company_service import CompanyService
-from domain.repositories.admin_repository import AdminRepository
+from infrastructure.email.email import EmailService
+from infrastructure.repository.admin_repository import AdminRepository
 from utils.error import Error
 
 
@@ -19,6 +19,7 @@ class AdminService:
     def create(self, admin: Admin) -> Admin:
         if self.get_by_email(admin.email):
             raise Error(Error.Code.invalid_attribute, f"Admin email already exists!", 400)
+        admin.password = Admin.hash_password(admin.password)
         return self.repository.create(admin)
     
 
@@ -27,7 +28,7 @@ class AdminService:
         if not admin:
             raise Error(Error.Code.object_not_found, f"No admin with id: {admin_id}!", 400)
         if password:
-            admin.hashed_password = password
+            admin.password = Admin.hash_password(password)
         return self.repository.update(admin)
     
     
@@ -40,10 +41,7 @@ class AdminService:
     
 
     def get_by_email(self, email: str) -> Admin | None:
-        admin_list = self.repository.get_by_fields(email=email)
-        if len(admin_list) > 1:
-            raise Error(Error.Code.internal_error, f"More than 1 Admin with same email: {email}", 500)
-        return admin_list[0] if len(admin_list) > 0 else None
+        return self.repository.get_by_email(email=email)
     
 
     def page(self, cursor: str | None = None, limit: int | None = None):

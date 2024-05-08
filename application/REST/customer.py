@@ -87,7 +87,7 @@ def create_customer_token():
     attributes_in_json = [field for field in data.keys()] 
     missing_attributes_in_json = [item for item in required_attributes if item not in attributes_in_json]    
 
-    if len(missing_attributes_in_json) < 0:
+    if len(missing_attributes_in_json) > 0:
         raise Error(
             code = Error.Code.missing_attributes, 
             message = Error.Message.missing_attributes.format(attributes=missing_attributes_in_json),

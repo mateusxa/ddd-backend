@@ -2,7 +2,7 @@ from logging import warning
 import pytest
 from uuid import uuid4
 from dotenv import load_dotenv
-from main import app
+from app import app
 from domain.entites.admin import Admin
 from domain.services.admin_service import AdminService
 

@@ -11,7 +11,7 @@ report_service = ReportService()
 
 @reports_blueprint.route('/reports', methods=['GET'])
 @customer_token_required
-def get_reports():
+def get_reports(customer_id, company_id):
     cursor = request.args.get('cursor')
     limit = request.args.get('limit')
 

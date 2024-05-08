@@ -8,13 +8,10 @@ from utils.error import Error
 
 class Admin(Entity):
     
-    def __init__(
-            self, name: str, email: str, password: str | None = None, hashed_password: str | None = None, 
-            id: str | None = None, created: datetime | None = None
-        ):
+    def __init__(self, name: str, email: str, password: str, id: str | None = None, created: datetime | None = None):
         self._name = name
         self._email = email
-        self._hashed_password = self.hash_password(password) if password else hashed_password
+        self._password = password
         self._id = id
         self._created = created or datetime.now(timezone.utc)
 
@@ -27,12 +24,12 @@ class Admin(Entity):
         return  self._email
     
     @property
-    def hashed_password(self) -> str | None:
-        return self._hashed_password
+    def password(self) -> str:
+        return self._password
     
-    @hashed_password.setter
-    def hashed_password(self, password: str):
-        self._hashed_password = Admin.hash_password(password)
+    @password.setter
+    def password(self, password):
+        self._password = password
     
     @property
     def id(self) -> str | None:
@@ -46,13 +43,13 @@ class Admin(Entity):
         return f"Admin(\
             name={self._name}, \
             email={self._email}, \
-            hashed_password={self.hashed_password}, \
+            password={self.password}, \
             id={self._id}, \
             created={self._created}\
         )"
 
     def is_password_valid(self, password: str):
-        if self.hash_password(password) ==  self.hashed_password:
+        if self.hash_password(password) ==  self.password:
             self.verified = True
             return True
         return False
@@ -72,6 +69,6 @@ class Admin(Entity):
             id = source["id"],
             name = source["name"],
             email = source["email"],
-            hashed_password = source["hashed_password"],
+            password = source["password"],
             created = source["created"],
         )
