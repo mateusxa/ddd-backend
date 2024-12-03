@@ -1,5 +1,5 @@
 Flask==3.0.2
-waitress==2.1.2
+waitress==3.0.1
 SQLAlchemy==2.0.29
 pymysql==1.1.1
 sqlalchemy-utils==0.41.2
